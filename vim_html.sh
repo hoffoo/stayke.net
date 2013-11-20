@@ -1,9 +1,9 @@
-export output="`pwd`/html/code/"
-export src="`pwd`/src/"
-export home=`pwd`
+output="`pwd`/html/code/"
+src="`pwd`/src/"
+home=`pwd`
 
 cd src
-export projects=`find . -mindepth 1 -type d -not -path '*/.git*'`
+projects=`find . -mindepth 1 -type d -not -path '*/.git*'`
 
 cd $output
 for p in $projects;
@@ -20,7 +20,6 @@ do
 		out=$output$file
 
 		echo $file
-		#echo $file
 		gvim -u $home/htmlrc.vim -E -s -c +":syn on" +"run! syntax/2html.vim" +"saveas! $out.html" +"qall!" $file >> /dev/null &
 	done
 	echo
