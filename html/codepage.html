@@ -1,0 +1,47 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+
+		<link href='/main.css' rel='stylesheet' type='text/css'>
+
+		<style>
+			#code {
+				text-align: center;
+			}
+
+			#filenav {
+				position: fixed;
+				margin: 60px;
+			}
+
+			#filenav ul {
+				list-style-type: none;
+				padding: 0px;
+				margin: 0px;
+			}
+		</style>
+	</head>
+
+	<body>
+
+	<div id="header" class="yue">
+		<div id="brand">
+{{{pnav}}}
+		</div>
+	</div>
+
+	<div class="yue">
+		<div id="filenav">
+			<ul>
+{{{fnav}}}
+			<ul>
+		</div>
+
+		<div id="code">
+			<iframe frameborder="0" width="800" height="70%" src="/code/{{{url}}}"></iframe>
+		</div>
+	</div>
+
+	</body>
+</html>
+

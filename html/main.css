@@ -79,7 +79,7 @@ body {
 #rainbow li {
 	display: inline-block;
 	min-height: 4px;
-	min-width: 30px;
+	min-width: 40px;
 	margin: 0 auto;
 	background-color:#121212;
 	text-align: center;
