@@ -1,0 +1,103 @@
+/**
+* yue.css
+*
+* yue.css is designed for readable content.
+*
+* Copyright (c) 2013 by Hsiaoming Yang.
+*/
+.yue{font:400 18px/1.62 Georgia,"Xin Gothic","Hiragino Sans GB","WenQuanYi Micro Hei",sans-serif;color:#333332}.yue ::selection{background-color:rgba(0,0,0,.2)}.yue h1,.yue h2,.yue h3,.yue h4,.yue h5,.yue h6{font-family:Georgia,"Xin Gothic","Hiragino Sans GB","WenQuanYi Micro Hei","Microsoft YaHei",SimSun,sans-serif;color:#222223}.yue h1{font-size:1.8em;margin:.67em 0}.yue>h1{margin-top:0;font-size:2em}.yue h2{font-size:1.5em;margin:.83em 0}.yue h3{font-size:1.17em;margin:1em 0}.yue h4,.yue h5,.yue h6{font-size:1em;margin:1.6em 0 1em}.yue h6{font-weight:500}.yue p{margin-top:0;margin-bottom:1.64em}.yue a{color:#111;word-wrap:break-word}.yue a:hover{color:#555}.yue b,.yue strong{font-weight:700;color:#222}.yue em,.yue i{font-style:italic;color:#222}.yue img{display:block;max-width:100%;height:auto;margin:.2em 0}.yue hr{border:0 none;margin-bottom:1em}.yue hr:after{color:#9f9f95;font-size:1.1em;display:block;content:"* * *";text-align:center;letter-spacing:.6em}.yue blockquote{padding-left:20px;border-left:4px solid #dadada;margin:0 0 1.64em -24px;color:#666664}@media (max-width:500px){.yue blockquote{margin-left:0;border-width:3px;padding-left:12px}}.yue ol,.yue ul{margin:0 0 24px 6px;padding-left:16px}.yue ul{list-style-type:square}.yue ol{list-style-type:decimal}.yue li{margin-bottom:.2em}.yue li ol,.yue li ul{margin-top:0;margin-bottom:0;margin-left:14px}.yue li ul{list-style-type:disc}.yue li ul ul{list-style-type:circle}.yue li p{margin:.4em 0 .6em}.yue .unstyled{list-style-type:none;margin:0;padding:0}.yue code,.yue tt{color:gray;font-size:.96em;background-color:#f9f9f7;padding:1px 2px;border:1px solid #dadada;border-radius:3px;font-family:Inconsolata,Menlo,monospace}.yue pre{padding:7px;border:1px solid #dadada;border-radius:4px;overflow:auto;line-height:1.5;font-size:.96em;font-family:Inconsolata,Menlo,monospace;color:#4c4c4c;background-color:#f9f9f7}.yue pre code,.yue pre tt{color:#4c4c4c;border:0;background-color:none;padding:0}.yue table{border-collapse:collapse;border-spacing:0;margin-bottom:1.5em;font-size:.96em}.yue td,.yue th{text-align:left;padding:4px 8px 4px 10px;border:1px solid #dadada}.yue td{vertical-align:top}.yue tr:nth-child(even){background-color:#efefee}
+
+/* font */
+@font-face {
+	font-family: 'Lora';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Lora'), url(http://themes.googleusercontent.com/static/fonts/lora/v5/5-AYViExptypIdFoLKAxTA.woff) format('woff');
+}
+
+/* page stuff */
+
+body {
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+#brand {
+	padding: 70px 0px 70px;
+	font-size: 23px;
+	font-weight: 100;
+	font-family: "Inconsolata", "Menlo", monospace;
+	text-transform: uppercase;
+	letter-spacing: 3px;
+	text-align: center;
+}
+
+#brand strong {
+	font-size: 25px;
+	font-weight: 200;
+	color: #000;
+	text-align: center;
+}
+
+#brand a {
+	text-decoration: none;
+	color: #666;
+}
+
+#nav {
+	font-size: 15px;
+	font-weight: 200;
+	font-family: "Inconsolata", "Menlo", monospace;
+	text-transform: uppercase;
+	letter-spacing: 5px;
+	text-align: center;
+}
+
+#nav a {
+	text-decoration: none;
+}
+
+#nav a:hover {
+	color: #666;
+}
+
+#nav a:visited {
+	color: #444;
+}
+
+#pretty {
+	text-align: center;
+}
+
+#rainbow {
+	list-style-type: none;
+	padding: 0px;
+	margin: 0px;
+}
+
+#rainbow li {
+	display: inline-block;
+	min-height: 4px;
+	min-width: 30px;
+	margin: 0 auto;
+	background-color:#121212;
+	text-align: center;
+}
+
+#content {
+	padding: 60px 0px 60px;
+	margin: 0 auto;
+	max-width: 650px;
+	display: block;
+}
+
+#footer {
+	background-image:url("bg.png");
+	min-height: 10%;
+	min-width: 100%;
+	position: fixed;
+	bottom: 0;
+	margin: auto;
+}
+
