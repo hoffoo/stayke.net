@@ -18,11 +18,7 @@ const (
 	codeDir = "src/"
 )
 
-// regex to check the url against and grab project name
-var pregex *regexp.Regexp
-
 func Projects(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
-	cacheFiles()
 
 	p, f, failed := resolvePath(e)
 	if failed == true {
@@ -34,6 +30,10 @@ func Projects(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	// poor man's mustache
 	body := bytes.Replace(cpage, []byte("{{{url}}}"), []byte(p+f+".html"), 1)
 	body = bytes.Replace(body, []byte("{{{pnav}}}"), []byte(pnav), 1)
+
+	pfiles, _ := fileNav[p]
+	fnav := strings.Join(pfiles, "\n")
+
 	body = bytes.Replace(body, []byte("{{{fnav}}}"), []byte(fnav), 1)
 	return 200, nil, mango.Body(body)
 }
@@ -41,7 +41,15 @@ func Projects(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 func Code(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	p, f, failed := resolvePath(e)
 	if failed == true {
-		return FourOhFour(e)
+		pregex := regexp.MustCompile("code/([\\w-_\\d]+).html")
+		parr := pregex.FindStringSubmatch(e.Request().URL.Path)
+
+		if parr == nil {
+			return FourOhFour(e)
+		} else {
+			p = parr[1]
+			f = "/README.md.html"
+		}
 	}
 
 	fpath := "html/code/" + p + f
@@ -59,6 +67,10 @@ func Code(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 // resolves url path to project and file path
 func resolvePath(e mango.Env) (project, file string, err bool) {
 	p := e.Request().URL.Path
+
+	// TODO optimize this
+	// first match is the project name, second relative path of the file
+	pregex := regexp.MustCompile("/(code|project)/([\\w-_\\d]+)?(/[\\w-_\\d\\/\\.]+)?$")
 	pr := pregex.FindStringSubmatch(p)
 
 	if pr == nil {
@@ -73,6 +85,13 @@ func resolvePath(e mango.Env) (project, file string, err bool) {
 	return
 }
 
+// list of projects
+func ProjectList(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
+	body := bytes.Replace(ppage, []byte("{{{pnav}}}"), []byte(pnav), 1)
+
+	return 200, nil, mango.Body(body)
+}
+
 // could just do a static handler but where is the fun in that
 // also my vps has a slow spinning disk and enough ram
 // so cache the pages and code page partials
@@ -83,6 +102,8 @@ var (
 	contact []byte
 	css     []byte
 	bg      []byte
+	// projects page (index)
+	ppage []byte
 	// code page header and footer
 	cpage  []byte
 	cstyle []byte
@@ -96,6 +117,7 @@ func cacheFiles() {
 	ioread(&bg, "html/bg.png")
 	ioread(&cpage, "html/codepage.html")
 	ioread(&cstyle, "html/code.css")
+	ioread(&ppage, "html/projpage.html")
 }
 
 func ioread(buff *[]byte, path string) {
@@ -108,13 +130,13 @@ func ioread(buff *[]byte, path string) {
 }
 
 var (
-	pnav string
-	fnav string
+	pnav    string
+	fileNav map[string][]string
 )
 
 const (
 	projLink = "<a href=\"/project/%s\">%s</a>\n"
-	fileLink = "<li><a href=\"/project/%s/%s\">%s</a></li>\n"
+	fileLink = "<a href=\"/project/%s/%s\">%s</a>\n"
 )
 
 // build the html for both the project header
@@ -136,7 +158,7 @@ func cacheProjects() {
 		}
 	}
 
-	fileNav := make(map[string][]string)
+	fileNav = make(map[string][]string)
 
 	var root string
 	walker := func(p string, info os.FileInfo, err error) error {
@@ -145,7 +167,7 @@ func cacheProjects() {
 		} else {
 			// TODO this is kind of retarded
 			title := strings.Replace(info.Name(), ".html", "", 1)
-			fileNav[root] = append(fileNav[root], title)
+			fileNav[root] = append(fileNav[root], fmt.Sprintf(fileLink, root, title, title))
 		}
 
 		return nil
@@ -156,13 +178,6 @@ func cacheProjects() {
 			filepath.Walk(projDir+"/"+d.Name(), walker)
 		}
 	}
-
-	for p, fs := range fileNav {
-		for _, f := range fs {
-			fnav = fnav + fmt.Sprintf(fileLink, p, f, f)
-		}
-	}
-
 }
 
 // TODO get rid of all these redundant functions
@@ -205,22 +220,20 @@ func main() {
 	cacheFiles()
 	cacheProjects()
 
-	// first match is the project name, second relative path of the file
-	pregex = regexp.MustCompile("/(code|project)/([\\w-_\\d]+)(/[\\w-_\\d\\/\\.]+)?$")
-
 	app := mango.Stack{}
 
 	app.Address = ":8080"
 
 	r := map[string]mango.App{
-		"/$|index":   app.Compile(Index),
-		"about":      app.Compile(About),
-		"contact":    app.Compile(Contact),
-		"main.css":   app.Compile(Css),
-		"bg.png":     app.Compile(Bg),
-		"code.css":   app.Compile(CodeCss),
-		"/project/*": app.Compile(Projects),
-		"/code/*":    app.Compile(Code),
+		"/$|index":      app.Compile(Index),
+		"about":         app.Compile(About),
+		"contact":       app.Compile(Contact),
+		"main.css":      app.Compile(Css),
+		"bg.png":        app.Compile(Bg),
+		"code.css":      app.Compile(CodeCss),
+		"/project(/)?$": app.Compile(ProjectList),
+		"/project/*":    app.Compile(Projects),
+		"/code/*":       app.Compile(Code),
 	}
 
 	app.Middleware(mango.Routing(r))

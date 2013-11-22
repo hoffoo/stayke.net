@@ -2,6 +2,8 @@ output="`pwd`/html/code/"
 src="`pwd`/src/"
 home=`pwd`
 
+rm -rf $output/*
+
 cd src
 projects=`find . -mindepth 1 -type d -not -path '*/.git*'`
 

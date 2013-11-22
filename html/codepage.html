@@ -11,7 +11,15 @@
 
 			#filenav {
 				position: fixed;
-				margin: 60px;
+				margin-left: 35px;
+				font-size: 15px;
+				font-weight: 200;
+				font-family: "Inconsolata", "Menlo", monospace;
+				letter-spacing: 3px;
+			}
+
+			#filenav a {
+				text-decoration: none;
 			}
 
 			#filenav ul {
@@ -19,6 +27,15 @@
 				padding: 0px;
 				margin: 0px;
 			}
+
+			#nav {
+				text-transform: lowercase;
+			}
+
+			#codeview {
+				margin-top: 25px;
+			}
+
 		</style>
 	</head>
 
@@ -28,13 +45,14 @@
 		<div id="brand">
 {{{pnav}}}
 		</div>
+
+		<div id="nav">
+{{{fnav}}}
+		</div>
 	</div>
 
-	<div class="yue">
+	<div class="yue" id="codeview">
 		<div id="filenav">
-			<ul>
-{{{fnav}}}
-			<ul>
 		</div>
 
 		<div id="code">
