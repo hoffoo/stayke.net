@@ -1,0 +1,220 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/homepage/src/grr-radius/main.groovy.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="groovy">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.Function { color: #FFD2A7; }
+.Conditional { color: #6699CC; }
+.Operator { color: white; }
+.Statement { color: #6699CC; font-weight: bold; }
+.PreProc { color: #96CBFE; text-decoration: underline; }
+.Type { color: #FFFFB6; text-decoration: underline; }
+.String { color: #A8FF60; }
+.Number { color: #FF73FD; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Identifier { color: #C6C5FE; text-decoration: underline; }
+.Comment { color: #A8FF60; font-weight: bold; }
+.Constant { color: #99CC99; text-decoration: underline; }
+.Special { color: #E18964; font-weight: bold; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+@Grab(group=<span class="String">'org.tinyradius'</span>, module=<span class="String">'tinyradius'</span>, version=<span class="String">'0.9.9'</span>)<br>
+@Grab(group=<span class="String">'commons-cli'</span>, module=<span class="String">'commons-cli'</span>, version=<span class="String">'1.2'</span>)<br>
+<br>
+<br>
+<span class="PreProc">import</span>&nbsp;org.tinyradius.packet.*<br>
+<span class="PreProc">import</span>&nbsp;org.tinyradius.*<br>
+<span class="PreProc">import</span>&nbsp;org.tinyradius.dictionary.*<br>
+<span class="PreProc">import</span>&nbsp;org.tinyradius.util.RadiusClient<br>
+<span class="PreProc">import</span>&nbsp;org.apache.commons.cli.Options<br>
+<span class="PreProc">import</span>&nbsp;org.apache.commons.cli.PosixParser<br>
+<span class="PreProc">import</span>&nbsp;org.apache.commons.cli.HelpFormatter<br>
+<br>
+<br>
+<span class="Special">def</span>&nbsp;options =&nbsp;<span class="Operator">new</span>&nbsp;Options()<br>
+options.addOption(<span class="String">&quot;c&quot;</span>,&nbsp;<span class="String">&quot;config&quot;</span>,&nbsp;<span class="Constant">true</span>,&nbsp;<span class="String">&quot;config file. [./config]&quot;</span>)<br>
+options.addOption(<span class="String">&quot;h&quot;</span>,&nbsp;<span class="String">&quot;host&quot;</span>,&nbsp;<span class="Constant">true</span>,&nbsp;<span class="String">&quot;radius server&quot;</span>)<br>
+options.addOption(<span class="String">&quot;s&quot;</span>,&nbsp;<span class="String">&quot;secret&quot;</span>,&nbsp;<span class="Constant">true</span>,&nbsp;<span class="String">&quot;radius secret&quot;</span>)<br>
+options.addOption(<span class="String">&quot;d&quot;</span>,&nbsp;<span class="String">&quot;dictionary&quot;</span>,&nbsp;<span class="Constant">true</span>,&nbsp;<span class="String">&quot;dictionary file. [./dictionary]&quot;</span>)<br>
+options.addOption(<span class="String">&quot;chap&quot;</span>,&nbsp;<span class="String">&quot;chap&quot;</span>,&nbsp;<span class="Constant">false</span>,&nbsp;<span class="String">&quot;chap authentication [default]&quot;</span>)<br>
+options.addOption(<span class="String">&quot;pap&quot;</span>,&nbsp;<span class="String">&quot;pap&quot;</span>,&nbsp;<span class="Constant">false</span>,&nbsp;<span class="String">&quot;pap authentication&quot;</span>)<br>
+options.addOption(<span class="String">&quot;help&quot;</span>,&nbsp;<span class="Constant">false</span>,&nbsp;<span class="String">&quot;print usage&quot;</span>)<br>
+<br>
+<span class="Special">def</span>&nbsp;parser =&nbsp;<span class="Operator">new</span>&nbsp;PosixParser()<br>
+args = parser.parse(options, args)<br>
+<br>
+<span class="Comment">// missing args, print help and quit</span><br>
+<span class="Conditional">if</span>&nbsp;(args.getArgList().<span class="Function">size</span>()&nbsp;!=&nbsp;<span class="Number">3</span>&nbsp;|| args.hasOption(<span class="String">&quot;help&quot;</span>))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;help(options)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+}<br>
+<br>
+<span class="Comment">// use default config or passed -c arg</span><br>
+<br>
+<span class="Special">def</span>&nbsp;configFile<br>
+<span class="Special">def</span>&nbsp;dictFile<br>
+<span class="Statement">try</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;configFile =&nbsp;<span class="Operator">new</span>&nbsp;ConfigSlurper().parse(<span class="Operator">new</span>&nbsp;File(args.getOptionValue(<span class="String">&quot;config&quot;</span>)&nbsp;?:&nbsp;<span class="String">&quot;config&quot;</span>).toURL())<br>
+}&nbsp;<span class="Statement">catch</span>&nbsp;(<span class="Statement">IOException</span>&nbsp;ex)&nbsp;{&nbsp;<span class="Function">println</span>&nbsp;(<span class="String">&quot;couldnt load&nbsp;&nbsp;config file&quot;</span>)&nbsp;}<br>
+<span class="Statement">try</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dictFile =&nbsp;<span class="Operator">new</span>&nbsp;FileInputStream(<span class="Operator">new</span>&nbsp;File(args.getOptionValue(<span class="String">&quot;dictionary&quot;</span>)?:<span class="String">&quot;dictionary&quot;</span>))<br>
+}&nbsp;<span class="Statement">catch</span>&nbsp;(<span class="Statement">IOException</span>&nbsp;ex)&nbsp;{&nbsp;<span class="Function">println</span>&nbsp;(<span class="String">&quot;couldn't load dictionary file&quot;</span>)}<br>
+<br>
+Map cfg =&nbsp;[:]&nbsp;&nbsp;<span class="Comment">// our final config - will be passed to Client</span><br>
+<br>
+<span class="Comment">// add attributes and dictionary into our into cfg</span><br>
+cfg.dictionary = dictFile<br>
+<span class="Conditional">if</span>&nbsp;(configFile?.attributes)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cfg.attributes = configFile.attributes<br>
+<br>
+<span class="Special">def</span>&nbsp;populateConfig =&nbsp;<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">boolean</span>&nbsp;required =&nbsp;<span class="Constant">true</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Special">def</span>&nbsp;addCfgProp =&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ opt, val =&nbsp;<span class="Constant">null</span>&nbsp;<span class="Operator">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;(val !=&nbsp;<span class="Constant">null</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg[opt]&nbsp;= val<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>(args.hasOption(opt))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg[opt]&nbsp;= args.getOptionValue(opt)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>&nbsp;(!configFile[opt])&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;(required)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Function">println</span>&nbsp;<span class="String">&quot;missing reqired option:&nbsp;</span><span class="Identifier">$opt</span><span class="String">&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">else</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg[opt]&nbsp;= configFile[opt]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addCfgProp(<span class="String">&quot;host&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addCfgProp(<span class="String">&quot;secret&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addCfgProp(<span class="String">&quot;action&quot;</span>, args.getArgList()[<span class="Number">0</span>])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addCfgProp(<span class="String">&quot;username&quot;</span>, args.getArgList()[<span class="Number">1</span>])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addCfgProp(<span class="String">&quot;password&quot;</span>, args.getArgList()[<span class="Number">2</span>])<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;required =&nbsp;<span class="Constant">false</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addCfgProp(<span class="String">&quot;pap&quot;</span>, args.hasOption(<span class="String">&quot;pap&quot;</span>))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addCfgProp(<span class="String">&quot;chap&quot;</span>,&nbsp;<span class="Constant">true</span>)<br>
+}()<br>
+<br>
+<br>
+<span class="Operator">new</span>&nbsp;Client(cfg)<br>
+<br>
+<span class="Type">class</span>&nbsp;Client<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Map cfg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Dictionary dictionary<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RadiusClient client<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Special">def</span>&nbsp;authMethod<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Client(Map cfg)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client =&nbsp;<span class="Operator">new</span>&nbsp;RadiusClient(cfg.host, cfg.secret)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dictionary = DictionaryParser.parseDictionary(cfg.dictionary)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">this</span>.cfg = cfg<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;(cfg.pap)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">this</span>.authMethod = AccessRequest.AUTH_PAP<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>&nbsp;(cfg.chap)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">this</span>.authMethod = AccessRequest.AUTH_CHAP<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">try</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">this</span>[cfg.action]()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Statement">catch</span>&nbsp;(org.tinyradius.util.<span class="Statement">RadiusException</span>&nbsp;r)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Function">println</span>(<span class="String">&quot;probably invalid secret&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Statement">catch</span>&nbsp;(ExceptionInInitializerError exp)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Function">println</span>(<span class="String">&quot;error staring tinyradius - make sure your jar has default dictionary in it: see <a href="http://github.com/hoffoo/grrradius/issues/1">http://github.com/hoffoo/grrradius/issues/1</a>&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Statement">catch</span>&nbsp;(<span class="Statement">MissingPropertyException</span>&nbsp;mp)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Function">println</span>(<span class="String">&quot;unknown action&nbsp;</span><span class="Identifier">${cfg.action}</span><span class="String">&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Special">def</span>&nbsp;auth =<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Special">def</span>&nbsp;request =&nbsp;<span class="Operator">new</span>&nbsp;AccessRequest(cfg.username, cfg.password)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;request.setDictionary(dictionary)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;request.setAuthProtocol(authMethod)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg.attributes.<span class="Function">each</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ k, v&nbsp;<span class="Operator">-&gt;</span>&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;request.addAttribute(k, v)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Special">def</span>&nbsp;result = client.authenticate(request)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client.close()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;result<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Type">static</span>&nbsp;<span class="Type">void</span>&nbsp;help(options)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// sort long options at the bottom</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Special">def</span>&nbsp;comparator =&nbsp;[compare:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ a, b&nbsp;<span class="Operator">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;(a.opt.<span class="Function">size</span>()&nbsp;+ b.opt.<span class="Function">size</span>()&nbsp;==&nbsp;<span class="Number">2</span>)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.opt &lt; b.opt ? -<span class="Number">1</span>&nbsp;:&nbsp;<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.opt.<span class="Function">size</span>()&nbsp;&gt; b.opt.<span class="Function">size</span>()&nbsp;?&nbsp;<span class="Number">1</span>&nbsp;: -<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}]&nbsp;<span class="Special">as</span>&nbsp;Comparator<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Special">def</span>&nbsp;formatter =&nbsp;<span class="Operator">new</span>&nbsp;HelpFormatter()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;formatter.setOptionComparator(comparator)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;formatter.printHelp(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Number">80</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;grr [options] action username password&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;</span><span class="Special">\n</span><span class="String">Options must be passed as arguments or in the config file:&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;options,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;)<br>
+}<br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

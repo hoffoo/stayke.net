@@ -1,0 +1,304 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/homepage/src/homepage/main.go.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="go">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.String { color: #A8FF60; }
+.Number { color: #FF73FD; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Keyword { color: #96CBFE; }
+.Conditional { color: #6699CC; }
+.Statement { color: #6699CC; font-weight: bold; }
+.Comment { color: #A8FF60; font-weight: bold; }
+.Type { color: #FFFFB6; text-decoration: underline; }
+.Special { color: #E18964; font-weight: bold; }
+.Todo { color: #8f8f8f; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+<span class="Statement">package</span>&nbsp;main<br>
+<br>
+<span class="Statement">import</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;bytes&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;fmt&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;github.com/paulbellamy/mango&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;io/ioutil&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;os&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;path/filepath&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;regexp&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;strings&quot;</span><br>
+)<br>
+<br>
+<span class="Keyword">var</span>&nbsp;debug&nbsp;<span class="Type">bool</span>&nbsp;=&nbsp;<span class="Keyword">true</span><br>
+<br>
+<span class="Keyword">const</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;projDir =&nbsp;<span class="String">&quot;html/code&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;codeDir =&nbsp;<span class="String">&quot;src/&quot;</span><br>
+)<br>
+<br>
+<span class="Keyword">func</span>&nbsp;Projects(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p, f, failed := resolvePath(e)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;failed ==&nbsp;<span class="Keyword">true</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;FourOhFour(e)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;</span><span class="Todo">TODO</span><span class="Comment">&nbsp;stat project dir</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// poor man's mustache</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;body := bytes.Replace(cpage, []<span class="Type">byte</span>(<span class="String">&quot;{{{url}}}&quot;</span>), []<span class="Type">byte</span>(p+f+<span class="String">&quot;.html&quot;</span>),&nbsp;<span class="Number">1</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;body = bytes.Replace(body, []<span class="Type">byte</span>(<span class="String">&quot;{{{pnav}}}&quot;</span>), []<span class="Type">byte</span>(pnav),&nbsp;<span class="Number">1</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pfiles, _ := fileNav[p]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fnav := strings.Join(pfiles,&nbsp;<span class="String">&quot;</span><span class="Special">\n</span><span class="String">&quot;</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;body = bytes.Replace(body, []<span class="Type">byte</span>(<span class="String">&quot;{{{fnav}}}&quot;</span>), []<span class="Type">byte</span>(fnav),&nbsp;<span class="Number">1</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(body)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;Code(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p, f, failed := resolvePath(e)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;failed ==&nbsp;<span class="Keyword">true</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pregex := regexp.MustCompile(<span class="String">&quot;code/([</span><span class="Special">\\</span><span class="String">w-_</span><span class="Special">\\</span><span class="String">d]+).html&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parr := pregex.FindStringSubmatch(e.Request().URL.Path)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;parr ==&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;FourOhFour(e)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p = parr[<span class="Number">1</span>]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f =&nbsp;<span class="String">&quot;/README.md.html&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fpath :=&nbsp;<span class="String">&quot;html/code/&quot;</span>&nbsp;+ p + f<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fileb, err := ioutil.ReadFile(fpath)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;FourOhFour(e)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(fileb)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;FourOhFour(e)<br>
+}<br>
+<br>
+<span class="Comment">// resolves url path to project and file path</span><br>
+<span class="Keyword">func</span>&nbsp;resolvePath(e mango.Env) (project, file&nbsp;<span class="Type">string</span>, err&nbsp;<span class="Type">bool</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p := e.Request().URL.Path<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;</span><span class="Todo">TODO</span><span class="Comment">&nbsp;optimize this</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// first match is the project name, second relative path of the file</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;pregex := regexp.MustCompile(<span class="String">&quot;/(code|project)/([</span><span class="Special">\\</span><span class="String">w-_</span><span class="Special">\\</span><span class="String">d]+)?(/[</span><span class="Special">\\</span><span class="String">w-_</span><span class="Special">\\</span><span class="String">d</span><span class="Special">\\</span><span class="String">/</span><span class="Special">\\</span><span class="String">.]+)?$&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pr := pregex.FindStringSubmatch(p)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;pr ==&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// bad url, leave this</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="String">&quot;&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>,&nbsp;<span class="Keyword">true</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;project = pr[<span class="Number">2</span>]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;file = pr[<span class="Number">3</span>]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;err =&nbsp;<span class="Keyword">false</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+}<br>
+<br>
+<span class="Comment">// list of projects</span><br>
+<span class="Keyword">func</span>&nbsp;ProjectList(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;body := bytes.Replace(ppage, []<span class="Type">byte</span>(<span class="String">&quot;{{{pnav}}}&quot;</span>), []<span class="Type">byte</span>(pnav),&nbsp;<span class="Number">1</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(body)<br>
+}<br>
+<br>
+<span class="Comment">// could just do a static handler but where is the fun in that</span><br>
+<span class="Comment">// also my vps has a slow spinning disk and enough ram</span><br>
+<span class="Comment">// so cache the pages and code page partials</span><br>
+<span class="Keyword">var</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// main pages</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;index&nbsp;&nbsp; []<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;about&nbsp;&nbsp; []<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;contact []<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;css&nbsp;&nbsp;&nbsp;&nbsp; []<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;bg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[]<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// projects page (index)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;ppage []<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// code page header and footer</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;cpage&nbsp;&nbsp;[]<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;cstyle []<span class="Type">byte</span><br>
+)<br>
+<br>
+<span class="Keyword">func</span>&nbsp;cacheFiles() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;index,&nbsp;<span class="String">&quot;html/index.html&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;about,&nbsp;<span class="String">&quot;html/about.html&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;contact,&nbsp;<span class="String">&quot;html/contact.html&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;css,&nbsp;<span class="String">&quot;html/main.css&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;bg,&nbsp;<span class="String">&quot;html/bg.png&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;cpage,&nbsp;<span class="String">&quot;html/codepage.html&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;cstyle,&nbsp;<span class="String">&quot;html/code.css&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ioread(&amp;ppage,&nbsp;<span class="String">&quot;html/projpage.html&quot;</span>)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;ioread(buff *[]<span class="Type">byte</span>, path&nbsp;<span class="Type">string</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;b, err := ioutil.ReadFile(path)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">panic</span>(err)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*buff = b<br>
+}<br>
+<br>
+<span class="Keyword">var</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pnav&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">string</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fileNav&nbsp;<span class="Type">map</span>[<span class="Type">string</span>][]<span class="Type">string</span><br>
+)<br>
+<br>
+<span class="Keyword">const</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;projLink =&nbsp;<span class="String">&quot;&lt;a href=</span><span class="Special">\&quot;</span><span class="String">/project/%s</span><span class="Special">\&quot;</span><span class="String">&gt;%s&lt;/a&gt;</span><span class="Special">\n</span><span class="String">&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fileLink =&nbsp;<span class="String">&quot;&lt;a href=</span><span class="Special">\&quot;</span><span class="String">/project/%s/%s</span><span class="Special">\&quot;</span><span class="String">&gt;%s&lt;/a&gt;</span><span class="Special">\n</span><span class="String">&quot;</span><br>
+)<br>
+<br>
+<span class="Comment">// build the html for both the project header</span><br>
+<span class="Comment">// and file browser</span><br>
+<span class="Keyword">func</span>&nbsp;cacheProjects() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d, err := os.OpenFile(projDir, os.O_RDONLY,&nbsp;<span class="Number">0660</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">panic</span>(err)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dfs, rerr := d.Readdir(-<span class="Number">1</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;rerr !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">panic</span>(rerr)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;_, f :=&nbsp;<span class="Statement">range</span>&nbsp;dfs {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;f.IsDir() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pnav = pnav + fmt.Sprintf(projLink, f.Name(), f.Name())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fileNav =&nbsp;<span class="Keyword">make</span>(<span class="Type">map</span>[<span class="Type">string</span>][]<span class="Type">string</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">var</span>&nbsp;root&nbsp;<span class="Type">string</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;walker :=&nbsp;<span class="Type">func</span>(p&nbsp;<span class="Type">string</span>, info os.FileInfo, err&nbsp;<span class="Type">error</span>)&nbsp;<span class="Type">error</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;info.IsDir() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root = info.Name()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;</span><span class="Todo">TODO</span><span class="Comment">&nbsp;this is kind of retarded</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title := strings.Replace(info.Name(),&nbsp;<span class="String">&quot;.html&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>,&nbsp;<span class="Number">1</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fileNav[root] =&nbsp;<span class="Keyword">append</span>(fileNav[root], fmt.Sprintf(fileLink, root, title, title))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Keyword">nil</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;_, d :=&nbsp;<span class="Statement">range</span>&nbsp;dfs {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;d.IsDir() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(projDir+<span class="String">&quot;/&quot;</span>+d.Name(), walker)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Comment">//&nbsp;</span><span class="Todo">TODO</span><span class="Comment">&nbsp;get rid of all these redundant functions</span><br>
+<span class="Keyword">func</span>&nbsp;Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(index)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;About(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(about)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;Contact(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(contact)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;Css(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(css)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;Bg(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(bg)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;CodeCss(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">200</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(cstyle)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;FourOhFour(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;noPage, err := ioutil.ReadFile(<span class="String">&quot;html/404.html&quot;</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;noPage = []<span class="Type">byte</span>(<span class="String">&quot;page cannot be found&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">404</span>,&nbsp;<span class="Keyword">nil</span>, mango.Body(noPage)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;main() {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheFiles()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheProjects()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;app := mango.Stack{}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;app.Address =&nbsp;<span class="String">&quot;:8080&quot;</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r :=&nbsp;<span class="Type">map</span>[<span class="Type">string</span>]mango.App{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;/$|index&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app.Compile(Index),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;about&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; app.Compile(About),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;contact&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; app.Compile(Contact),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;main.css&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app.Compile(Css),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;bg.png&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app.Compile(Bg),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;code.css&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app.Compile(CodeCss),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;/project(/)?$&quot;</span>: app.Compile(ProjectList),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;/project/*&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;app.Compile(Projects),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;/code/*&quot;</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; app.Compile(Code),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;app.Middleware(mango.Routing(r))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;app.Run(FourOhFour)<br>
+}<br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

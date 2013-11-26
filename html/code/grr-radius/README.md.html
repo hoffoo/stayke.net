@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/homepage/src/grr-radius/README.md.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="markdown">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Title { color: #f6f3e8; font-weight: bold; }
+.Delimiter { color: #00A0A0; }
+.PreProc { color: #96CBFE; text-decoration: underline; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+<span class="Title">grradius</span><br>
+<span class="PreProc">========</span><br>
+<br>
+Radius testing client<br>
+<br>
+<span class="Title">usage</span><br>
+<span class="PreProc">=======</span><br>
+<br>
+<span class="Delimiter">```sh</span><br>
+usage: grr [options] action username password<br>
+<br>
+Options must be passed as arguments or in the config file:<br>
+&nbsp;-c,--config &lt;arg&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; config file. [./config]<br>
+&nbsp;-d,--dictionary &lt;arg&gt;&nbsp;&nbsp; dictionary file. [./dictionary]<br>
+&nbsp;-h,--host &lt;arg&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; radius server<br>
+&nbsp;-s,--secret &lt;arg&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; radius secret<br>
+&nbsp;-pap,--pap&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pap authentication<br>
+&nbsp;-chap,--chap&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;chap authentication [default]<br>
+&nbsp;-help&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print usage<br>
+<span class="Delimiter">```</span><br>
+<br>
+<span class="Title">notes</span><br>
+<span class="PreProc">=======</span><br>
+<br>
+The config file can contain any of the command line args. You can also<br>
+specify additional attributes in the following form:<br>
+<br>
+<span class="Delimiter">```groovy</span><br>
+attributes = [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&quot;NAS-IP-Address&quot;: &quot;1.1.1.1&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&quot;Service-Type&quot;: &quot;Login-User&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&quot;NAS-Identifier&quot;: &quot;grr&quot;<br>
+]<br>
+<span class="Delimiter">```</span><br>
+<br>
+Response and debugging info is printed to stdout<br>
+<br>
+<br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
