@@ -1,11 +1,11 @@
-output="`pwd`/html/code/"
+output="`pwd`/projects/"
 src="`pwd`/src/"
 home=`pwd`
 
 rm -rf $output/*
 
 cd src
-projects=`find . -mindepth 1 -type d -not -path '*/.git*'`
+projects=`find . -mindepth 1 -type d -not -path '*/\.*'`
 
 cd $output
 for p in $projects;
@@ -16,7 +16,7 @@ done
 cd $src
 for p in $projects;
 do
-	for f in `find $p -maxdepth 1 -type f -printf "%p\n"`;
+	for f in `find $p -maxdepth 1 -type f -not -path '*/\.*' -printf "%p\n"`;
 	do
 		file=${f#./}
 		out=$output$file

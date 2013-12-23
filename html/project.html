@@ -4,6 +4,26 @@
 	<meta charset="UTF-8">
 
 	<link href='/main.css' rel='stylesheet' type='text/css'>
+
+	<style>
+		#projectnav {
+			margin-bottom: 30px;
+			font-size: 15px;
+			font-weight: 200;
+			font-family: "Inconsolata", "Menlo", monospace;
+			text-transform: uppercase;
+			letter-spacing: 3px;
+			text-align: center;
+		}
+
+		#projectnav a:hover {
+			color: #666;
+		}
+	
+		#projectnav a:visited {
+			color: #444;
+		}
+	</style>
 	
 	</head>
 
@@ -14,7 +34,7 @@
 			</div>
 
 			<div id="nav">
-				{{{pnav}}}
+				{{{nav}}}
 			</div>
 
 			<div id="pretty">
@@ -32,12 +52,19 @@
 					<li style="background-color:#DCDCDC">
 				</ul>
 			</div>
+
 		</div>
 
 		<div class="yue" id="content">
+
 			<p>
-			Here is a list of all my projects. Click on a link above to navigate.
+			Here are some of my projects.
 			</p>
+
+			<div id="projectnav">
+				{{{projectnav}}}
+			</div>
+
 		</div>
 
 		<div id="recent">

@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
-	"testing"
 	"sync"
+	"testing"
 )
 
 const content = `404.html
@@ -20,11 +21,11 @@ codepage.html
 contact.html
 index.html
 main.css
-projpage.html`
+project.html`
 
 func TestWebApp(t *testing.T) {
 
-	setup()
+	setup(true)
 
 	pageUris := strings.Split(content, "\n")
 
@@ -43,6 +44,7 @@ func TestWebApp(t *testing.T) {
 
 			if resp.StatusCode != 200 {
 				t.Log(resp.Request.URL.Path + " failed")
+				t.Fail()
 				failure = true
 			}
 
@@ -52,11 +54,7 @@ func TestWebApp(t *testing.T) {
 
 	respc := 0
 	for {
-		failure := <-c
-
-		if failure {
-			t.Fail()
-		}
+		<-c
 
 		respc++
 		if respc == len(pageUris) {
@@ -67,27 +65,39 @@ func TestWebApp(t *testing.T) {
 
 func TestProjectWebAppReq(t *testing.T) {
 
-	setup()
+	setup(true)
 
 	p := Projects{}
-	filepath.Walk("code", p.Walker)
+	filepath.Walk("projects", p.Walker)
 
 	reqC := 0
 	c := make(chan bool)
 
 	for proj, files := range p {
 
-		reqC += len(files)
 
 		proj := proj
 		files := files
 
+		reqC += len(files)
+		//reqC += len(files) + 1
+
+//		resp, err := http.Get(fmt.Sprintf("http://localhost:8999/project/%s", proj))
+//
+//		// check all files and req to project /
+//		if err != nil || resp.StatusCode != 200 {
+//			t.Log("error opening / for project: " + proj)
+//			c <- true
+//		}
+
 		go func() {
+
 			for _, f := range files {
 				resp, err := http.Get(fmt.Sprintf("http://localhost:8999/project/%s/%s", proj, f))
 
 				if err != nil || resp.StatusCode != 200 {
-					t.Log(fmt.Sprintf("code %d: /project/%s/%s", resp.StatusCode, proj, f))
+					t.Log(fmt.Sprintf("projects %d: /project/%s/%s", resp.StatusCode, proj, f))
+					t.Fail()
 					c <- true
 				} else {
 					c <- false
@@ -97,11 +107,7 @@ func TestProjectWebAppReq(t *testing.T) {
 	}
 
 	for {
-		failed := <-c
-
-		if (failed) {
-			t.Fail()
-		}
+		<-c
 
 		reqC--
 		if reqC == 0 {
@@ -110,13 +116,107 @@ func TestProjectWebAppReq(t *testing.T) {
 	}
 }
 
+func TestProjectCodeReq(t *testing.T) {
+
+	setup(true)
+
+	proj := "xxtail"
+	f := "main.go.html"
+
+	resp, err := http.Get(fmt.Sprintf("http://localhost:8999/code/%s/%s", proj, f))
+
+	if resp.StatusCode != 200 || err != nil {
+		t.Fatal("bad response from /code")
+	}
+
+	resp, err = http.Get(fmt.Sprintf("http://localhost:8999/code/BADPROJECT/%s", f))
+
+	if resp.StatusCode != 404 || err != nil {
+		t.Fatal("expected 404 on bad project in /code")
+	}
+
+	resp, err = http.Get(fmt.Sprintf("http://localhost:8999/code/xxtail"))
+
+	if resp.StatusCode != 404 || err != nil {
+		t.Fatal("expected 404 on bad project in /code")
+	}
+
+	resp, err = http.Get(fmt.Sprintf("http://localhost:8999/code/%s/%s", proj, f))
+
+	if resp.StatusCode != 200 || err != nil {
+		t.Fatal("expected to get file on /code")
+	}
+}
+
+func TestMustachedNavAndCCS(t *testing.T) {
+
+	setup(true)
+
+	ps := Pages{}
+
+	filepath.Walk("html", ps.Walker)
+
+	p := Projects{}
+	filepath.Walk("projects", p.Walker)
+
+	mustacheTest := func(file, pattern, newdata string) {
+		e := ps.Mustache(file, pattern, newdata)
+
+		if e != nil || bytes.Index(ps[file], []byte(newdata)) == -1 {
+			t.Logf("mustache failed for file [%s] pattern [%s]", file, pattern)
+			t.Fail()
+		}
+	}
+
+	mustacheTest("html/index.html", "{{{nav}}}", "")
+	mustacheTest("html/project.html", "{{{nav}}}", "")
+	mustacheTest("html/project.html", "{{{projectnav}}}", "")
+	mustacheTest("html/contact.html", "{{{nav}}}", "")
+	mustacheTest("html/about.html", "{{{nav}}}", "")
+	mustacheTest("html/codepage.html", "{{{projectnav}}}", "")
+	mustacheTest("html/codepage.html", "{{{filenav}}}", "")
+	mustacheTest("html/codepage.html", "{{{url}}}", "")
+}
+
+func TestMustacheFunc(t *testing.T) {
+
+	setup(true)
+
+	ps := Pages{}
+
+	filepath.Walk("html", ps.Walker)
+
+	err := ps.Mustache("dfsfadss", "", "")
+
+	if err == nil {
+		t.Fatal("expected result: err on not finding bogus html file")
+	}
+
+	testPage := "html/project.html"
+
+	beforeIdx := bytes.Index(ps[testPage], []byte("{{{projectnav}}}"))
+	if beforeIdx == -1 {
+		t.Fatal("no replace str")
+	}
+
+	err = ps.Mustache(testPage, "{{{projectnav}}}", "fail")
+	if err != nil {
+		t.Fatal("failed replacing in Mustache")
+	}
+
+	beforeIdx = bytes.Index(ps[testPage], []byte("{{{projectnav}}}"))
+	if beforeIdx != -1 {
+		t.Fatal("failed replacing in Mustache")
+	}
+}
+
 func TestLoadProjects(t *testing.T) {
 
-	setup()
+	setup(true)
 
 	p := Projects{}
 
-	filepath.Walk("code", p.Walker)
+	filepath.Walk("projects", p.Walker)
 
 	if len(p) == 0 {
 		t.Fatal("didnt walk shit")
@@ -125,7 +225,7 @@ func TestLoadProjects(t *testing.T) {
 
 func TestLoadPages(t *testing.T) {
 
-	setup()
+	setup(true)
 
 	ps := Pages{}
 
@@ -141,7 +241,15 @@ func TestLoadPages(t *testing.T) {
 
 var setupOnce sync.Once
 
-func setup() {
+func setup(silenceLog bool) {
+
+	if silenceLog {
+		nullBuff := NullBuff{}
+		log.SetOutput(&nullBuff)
+	} else {
+		log.SetOutput(os.Stdout)
+	}
+
 	setupOnce.Do(startWebAppAndWait)
 }
 
@@ -150,9 +258,6 @@ func startWebAppAndWait() {
 
 	go StartHTTP("localhost:8999")
 
-	logBuff := bytes.Buffer{}
-	log.SetOutput(&logBuff)
-
 	// wait for app to start
 	for {
 		_, err := http.Get("http://localhost:8999/")
@@ -160,4 +265,11 @@ func startWebAppAndWait() {
 			break
 		}
 	}
+}
+
+type NullBuff bytes.Buffer
+
+func (nb *NullBuff) Write(p []byte) (n int, err error) {
+	// do nothing
+	return n, nil
 }
