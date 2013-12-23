@@ -244,7 +244,7 @@ func (ps Pages) MakeNav() {
 	navPages := []string{
 		"home",
 		"about",
-		"projects",
+		"project",
 		"resume",
 		"contact",
 	}
