@@ -64,7 +64,7 @@ func TestWebApp(t *testing.T) {
 	}
 }
 
-// test that we are sending back a not modified on images
+// test that we are sending back stuff that can be cached
 func TestConditionalGet(t *testing.T) {
 
 	setup(false)
@@ -91,6 +91,10 @@ func TestConditionalGet(t *testing.T) {
 		t.Fatal("didnt return 200 on img req")
 	}
 
+	if resp.Header.Get("Last-Modified") == "" || resp.Header.Get("Expires") == "" {
+		t.Fatal("didnt send back cache control headers")
+	}
+
 	req, err = http.NewRequest("GET", "http://localhost:8999/bg.png", nil)
 
 	mod := time.Now().Format(http.TimeFormat)
@@ -104,6 +108,10 @@ func TestConditionalGet(t *testing.T) {
 
 	if resp.StatusCode != 304 {
 		t.Fatal("didnt return 304 on img req with If-Modified-Since")
+	}
+
+	if resp.Header.Get("Last-Modified") == "" || resp.Header.Get("Expires") == "" {
+		t.Fatal("didnt send back cache control headers")
 	}
 
 	defer resp.Body.Close()

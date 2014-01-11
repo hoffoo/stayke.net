@@ -25,11 +25,13 @@ type (
 )
 
 var startTime time.Time
+var expirationHeaders mango.Headers
 
 func StartHTTP(addr string) {
 
 	startTime = time.Now()
-
+	expirationHeaders = mango.Headers{"Last-Modified": []string{startTime.Format(http.TimeFormat),},
+									  "Expires": []string{startTime.Add(24*time.Hour).Format(http.TimeFormat),}}
 	html = Pages{}
 	filepath.Walk("html", html.Walker)
 
@@ -77,14 +79,13 @@ func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 		return FourOhFour(e)
 	}
 
-	headers := mango.Headers{"Last-Modified": []string{startTime.Format(http.TimeFormat),}}
 
 	log.Printf("req for %s", f)
 	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && startTime.After(t) {
-		return 304, headers, ""
+		return 304, expirationHeaders, ""
 	}
 
-	return 200, headers, mango.Body(page)
+	return 200, expirationHeaders, mango.Body(page)
 }
 
 func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
