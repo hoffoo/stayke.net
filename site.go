@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/paulbellamy/mango"
+	"net/http"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var (
@@ -22,7 +24,11 @@ type (
 	Pages    map[string][]byte
 )
 
+var startTime time.Time
+
 func StartHTTP(addr string) {
+
+	startTime = time.Now()
 
 	html = Pages{}
 	filepath.Walk("html", html.Walker)
@@ -71,8 +77,14 @@ func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 		return FourOhFour(e)
 	}
 
+	headers := mango.Headers{"Last-Modified": []string{startTime.Format(http.TimeFormat),}}
+
 	log.Printf("req for %s", f)
-	return 200, nil, mango.Body(page)
+	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && startTime.After(t) {
+		return 304, headers, ""
+	}
+
+	return 200, headers, mango.Body(page)
 }
 
 func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {

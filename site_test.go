@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 const content = `404.html
@@ -63,6 +64,51 @@ func TestWebApp(t *testing.T) {
 	}
 }
 
+// test that we are sending back a not modified on images
+func TestConditionalGet(t *testing.T) {
+
+	setup(false)
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "http://localhost:8999/bg.png", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// req.Headers.Add()
+
+	// make the request to bg.png
+	resp, err := client.Do(req)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		t.Fatal("didnt return 200 on img req")
+	}
+
+	req, err = http.NewRequest("GET", "http://localhost:8999/bg.png", nil)
+
+	mod := time.Now().Format(http.TimeFormat)
+	req.Header.Add("If-Modified-Since", mod)
+
+	resp, err = client.Do(req)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != 304 {
+		t.Fatal("didnt return 304 on img req with If-Modified-Since")
+	}
+
+	defer resp.Body.Close()
+}
+
 func TestProjectWebAppReq(t *testing.T) {
 
 	setup(true)
@@ -75,20 +121,19 @@ func TestProjectWebAppReq(t *testing.T) {
 
 	for proj, files := range p {
 
-
 		proj := proj
 		files := files
 
 		reqC += len(files)
 		//reqC += len(files) + 1
 
-//		resp, err := http.Get(fmt.Sprintf("http://localhost:8999/project/%s", proj))
-//
-//		// check all files and req to project /
-//		if err != nil || resp.StatusCode != 200 {
-//			t.Log("error opening / for project: " + proj)
-//			c <- true
-//		}
+		//		resp, err := http.Get(fmt.Sprintf("http://localhost:8999/project/%s", proj))
+		//
+		//		// check all files and req to project /
+		//		if err != nil || resp.StatusCode != 200 {
+		//			t.Log("error opening / for project: " + proj)
+		//			c <- true
+		//		}
 
 		go func() {
 
