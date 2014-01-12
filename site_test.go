@@ -106,12 +106,8 @@ func TestConditionalGet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if resp.StatusCode != 304 {
-		t.Fatal("didnt return 304 on img req with If-Modified-Since")
-	}
-
-	if resp.Header.Get("Last-Modified") == "" || resp.Header.Get("Expires") == "" {
-		t.Fatal("didnt send back cache control headers")
+	if resp.StatusCode != 304 || resp.Header.Get("Last-Modified") == "" || resp.Header.Get("Expires") == "" {
+		t.Fatal("didnt send back cache control headers or status")
 	}
 
 	defer resp.Body.Close()
