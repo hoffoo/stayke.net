@@ -139,6 +139,8 @@ func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 
 	log.Printf("req for project file [%s]: %s", p, f)
 
+	headers.Set("Content-Type", "text/html; charset=utf-8")
+
 	return 200, headers, mango.Body(codePage)
 }
 
@@ -170,12 +172,14 @@ func ProjectCode(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	}
 
 	log.Printf("req for project code [%s]: %s", p, f)
+	headers.Set("Content-Type", "text/html; charset=utf-8")
 
 	return 200, headers, mango.Body(file)
 }
 
 func FourOhFour(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	log.Printf("404 on: %s", e.Request().URL.Path)
+	headers.Set("Content-Type", "text/html; charset=utf-8")
 	return 404, headers, mango.Body(html["html/404.html"])
 }
 
