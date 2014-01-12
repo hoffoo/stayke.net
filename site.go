@@ -83,7 +83,7 @@ func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 
 
 	log.Printf("req for %s", f)
-	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && startTime.Before(t) {
+	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && t.Before(startTime) {
 		return 304, expirationHeaders, ""
 	}
 
