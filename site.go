@@ -282,7 +282,6 @@ func (ps Pages) MakeNav() {
 	ps.Mustache("html/about.html", "{{{nav}}}", nav)
 	ps.Mustache("html/project.html", "{{{nav}}}", nav)
 	ps.Mustache("html/contact.html", "{{{nav}}}", nav)
-	ps.Mustache("html/contact.html", "{{{nav}}}", nav)
 }
 
 func MakeExpirationHeader() {
