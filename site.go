@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/paulbellamy/mango"
-	"net/http"
 	"io/ioutil"
 	"log"
+	"mime"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"mime"
 )
 
 var (
@@ -49,6 +49,7 @@ func StartHTTP(addr string) {
 	app.Address = addr
 
 	r := map[string]mango.App{
+		"^/resume(/)?(.html)?$": app.Compile(ResumeForward),
 		"^/project/.*": app.Compile(Project),
 		"^/code/.*":    app.Compile(ProjectCode),
 		"^/.*":         app.Compile(Index),
@@ -92,6 +93,14 @@ func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	}
 
 	return 200, headers, mango.Body(page)
+}
+
+func ResumeForward(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
+
+	forwardHeaders := make(mango.Headers)
+	forwardHeaders.Set("Location", "https://angel.co/marins")
+
+	return 301, forwardHeaders, ""
 }
 
 func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
@@ -292,7 +301,7 @@ func (ps Pages) MakeNav() {
 
 func MakeExpirationHeader() {
 	startTime = time.Now()
-	expireTime = startTime.Add(24*time.Hour)
+	expireTime = startTime.Add(24 * time.Hour)
 
 	headers.Set("Last-Modified", startTime.Format(http.TimeFormat))
 	headers.Set("Expires", expireTime.Format(http.TimeFormat))
