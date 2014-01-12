@@ -21,7 +21,8 @@ codepage.html
 contact.html
 index.html
 main.css
-project.html`
+project.html
+resume.pdf`
 
 func TestWebApp(t *testing.T) {
 
@@ -320,7 +321,7 @@ func TestMimeType(t *testing.T) {
 
 func TestResumeForward(t *testing.T) {
 
-	setup(true)
+	setup(false)
 
 	url := "http://localhost:8999/resume/"
 	noredir := &http.Transport{}
@@ -341,6 +342,26 @@ func TestResumeForward(t *testing.T) {
 	}
 
 	resp.Body.Close()
+}
+
+func TestResumePDFLink(t *testing.T) {
+
+	setup(false)
+
+	url := "http://localhost:8999/resume.pdf"
+
+	resp, err := http.Get(url)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.Header.Get("Content-Type") == ".pdf" {
+		t.Fatal("didnt get pdf")
+	}
+
+	resp.Body.Close()
+
 }
 
 var setupOnce sync.Once
