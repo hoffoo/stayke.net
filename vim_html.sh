@@ -2,8 +2,6 @@ output="`pwd`/projects/"
 src="`pwd`/src/"
 home=`pwd`
 
-rm -rf $output/*
-
 cd src
 projects=`find . -mindepth 1 -type d -not -path '*/\.*'`
 
@@ -22,7 +20,7 @@ do
 		out=$output$file
 
 		echo $file
-		gvim -u $home/htmlrc.vim -E -s -c +":syn on" +"run! syntax/2html.vim" +"saveas! $out.html" +"qall!" $file >> /dev/null &
+		vim -u $home/htmlrc.vim -E -s -c +":syn on" +"run! syntax/2html.vim" +"saveas! $out.html" +"qall!" $file >> /dev/null &
 	done
 	echo
 done
