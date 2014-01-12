@@ -318,6 +318,31 @@ func TestMimeType(t *testing.T) {
 	req.Body.Close()
 }
 
+func TestResumeForward(t *testing.T) {
+
+	setup(true)
+
+	url := "http://localhost:8999/resume/"
+	noredir := &http.Transport{}
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp, err := noredir.RoundTrip(req)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.Header.Get("Location") == "" || resp.StatusCode != 301 {
+		t.Fatal("didnt forward /resume request")
+	}
+
+	resp.Body.Close()
+}
+
 var setupOnce sync.Once
 
 func setup(silenceLog bool) {
