@@ -288,6 +288,37 @@ func TestLoadPages(t *testing.T) {
 	}
 }
 
+func TestMimeType(t *testing.T) {
+
+	setup(true)
+
+	url := "http://localhost:8999/main.css"
+
+	req, err := http.Get(url)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if req.Header.Get("Content-Type") != "text/css; charset=utf-8" {
+		t.Fatal("didnt get proper mime type " + req.Header.Get("Content-Type"))
+	}
+	req.Body.Close()
+
+	url = "http://localhost:8999/bg.png"
+
+	req, err = http.Get(url)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if req.Header.Get("Content-Type") != "image/png" {
+		t.Fatal("didnt get proper mime type " + req.Header.Get("Content-Type"))
+	}
+	req.Body.Close()
+}
+
 var setupOnce sync.Once
 
 func setup(silenceLog bool) {

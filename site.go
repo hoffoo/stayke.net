@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"mime"
 )
 
 var (
@@ -26,11 +27,11 @@ type (
 
 var startTime time.Time
 var expireTime time.Time
-var expirationHeaders mango.Headers
+var headers mango.Headers
 
 func StartHTTP(addr string) {
 
-	expirationHeaders = mango.Headers{}
+	headers = mango.Headers{}
 	MakeExpirationHeader()
 
 	html = Pages{}
@@ -83,13 +84,14 @@ func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 		return FourOhFour(e)
 	}
 
+	headers.Set("Content-Type", mime.TypeByExtension(f[strings.Index(f, "."):]))
 
 	log.Printf("req for %s", f)
 	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && t.Add(time.Second).Before(startTime) {
-		return 304, expirationHeaders, ""
+		return 304, headers, ""
 	}
 
-	return 200, expirationHeaders, mango.Body(page)
+	return 200, headers, mango.Body(page)
 }
 
 func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
@@ -120,7 +122,7 @@ func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	}
 
 	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && t.Add(time.Second).Before(startTime) {
-		return 304, expirationHeaders, ""
+		return 304, headers, ""
 	}
 
 	iframeUrl := fmt.Sprintf("/code/%s/%s", p, f)
@@ -137,7 +139,7 @@ func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 
 	log.Printf("req for project file [%s]: %s", p, f)
 
-	return 200, expirationHeaders, mango.Body(codePage)
+	return 200, headers, mango.Body(codePage)
 }
 
 func ProjectCode(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
@@ -169,12 +171,12 @@ func ProjectCode(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 
 	log.Printf("req for project code [%s]: %s", p, f)
 
-	return 200, expirationHeaders, mango.Body(file)
+	return 200, headers, mango.Body(file)
 }
 
 func FourOhFour(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	log.Printf("404 on: %s", e.Request().URL.Path)
-	return 404, expirationHeaders, mango.Body(html["html/404.html"])
+	return 404, headers, mango.Body(html["html/404.html"])
 }
 
 func (p Projects) Walker(path string, info os.FileInfo, err error) error {
@@ -288,6 +290,6 @@ func MakeExpirationHeader() {
 	startTime = time.Now()
 	expireTime = startTime.Add(24*time.Hour)
 
-	expirationHeaders.Add("Last-Modified", startTime.Format(http.TimeFormat))
-	expirationHeaders.Add("Expires", expireTime.Format(http.TimeFormat))
+	headers.Set("Last-Modified", startTime.Format(http.TimeFormat))
+	headers.Set("Expires", expireTime.Format(http.TimeFormat))
 }
