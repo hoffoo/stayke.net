@@ -84,14 +84,13 @@ function toggleFold(objID)
 )<br>
 <br>
 <span class="Keyword">var</span>&nbsp;startTime time.Time<br>
+<span class="Keyword">var</span>&nbsp;expireTime time.Time<br>
 <span class="Keyword">var</span>&nbsp;expirationHeaders mango.Headers<br>
 <br>
 <span class="Keyword">func</span>&nbsp;StartHTTP(addr&nbsp;<span class="Type">string</span>) {<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;startTime = time.Now()<br>
 &nbsp;&nbsp;&nbsp;&nbsp;expirationHeaders = mango.Headers{}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;expirationHeaders.Add(<span class="String">&quot;Last-Modified&quot;</span>, startTime.Format(http.TimeFormat))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;expirationHeaders.Add(<span class="String">&quot;Expires&quot;</span>, startTime.Add(<span class="Number">24</span>*<span class="Number">7</span>*time.Hour).Format(http.TimeFormat))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MakeExpirationHeader()<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;html = Pages{}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(<span class="String">&quot;html&quot;</span>, html.Walker)<br>
@@ -119,6 +118,10 @@ function toggleFold(objID)
 <br>
 <span class="Keyword">func</span>&nbsp;Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;time.Now().After(expireTime) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MakeExpirationHeader()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// urls with .html and without</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// handle / and /index</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;f := e.Request().URL.Path<br>
@@ -136,13 +139,12 @@ function toggleFold(objID)
 &nbsp;&nbsp;&nbsp;&nbsp;page, have := html[f]<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;!have {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log.Printf(<span class="String">&quot;404 on: %s&quot;</span>, f)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;FourOhFour(e)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;log.Printf(<span class="String">&quot;req for %s&quot;</span>, f)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;t, err := time.Parse(http.TimeFormat, e.Request().Header.Get(<span class="String">&quot;If-Modified-Since&quot;</span>)); err ==&nbsp;<span class="Keyword">nil</span>&nbsp;&amp;&amp; t.After(startTime) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;t, err := time.Parse(http.TimeFormat, e.Request().Header.Get(<span class="String">&quot;If-Modified-Since&quot;</span>)); err ==&nbsp;<span class="Keyword">nil</span>&nbsp;&amp;&amp; t.Add(time.Second).Before(startTime) {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">304</span>, expirationHeaders,&nbsp;<span class="String">&quot;&quot;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
@@ -174,6 +176,10 @@ function toggleFold(objID)
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;!have {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log.Printf(<span class="String">&quot;req for invalid project: %s&quot;</span>, p)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;FourOhFour(e)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;t, err := time.Parse(http.TimeFormat, e.Request().Header.Get(<span class="String">&quot;If-Modified-Since&quot;</span>)); err ==&nbsp;<span class="Keyword">nil</span>&nbsp;&amp;&amp; t.Add(time.Second).Before(startTime) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">304</span>, expirationHeaders,&nbsp;<span class="String">&quot;&quot;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;iframeUrl := fmt.Sprintf(<span class="String">&quot;/code/%s/%s&quot;</span>, p, f)<br>
@@ -226,6 +232,7 @@ function toggleFold(objID)
 }<br>
 <br>
 <span class="Keyword">func</span>&nbsp;FourOhFour(e mango.Env) (mango.Status, mango.Headers, mango.Body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;log.Printf(<span class="String">&quot;404 on: %s&quot;</span>, e.Request().URL.Path)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Number">404</span>, expirationHeaders, mango.Body(html[<span class="String">&quot;html/404.html&quot;</span>])<br>
 }<br>
 <br>
@@ -334,7 +341,14 @@ function toggleFold(objID)
 &nbsp;&nbsp;&nbsp;&nbsp;ps.Mustache(<span class="String">&quot;html/about.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>, nav)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;ps.Mustache(<span class="String">&quot;html/project.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>, nav)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;ps.Mustache(<span class="String">&quot;html/contact.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>, nav)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;ps.Mustache(<span class="String">&quot;html/contact.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>, nav)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;MakeExpirationHeader() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;startTime = time.Now()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;expireTime = startTime.Add(<span class="Number">24</span>*time.Hour)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;expirationHeaders.Add(<span class="String">&quot;Last-Modified&quot;</span>, startTime.Format(http.TimeFormat))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;expirationHeaders.Add(<span class="String">&quot;Expires&quot;</span>, expireTime.Format(http.TimeFormat))<br>
 }<br>
 </div>
 </body>
