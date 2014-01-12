@@ -17,7 +17,6 @@ const content = `404.html
 about.html
 bg.png
 robots.txt
-code.css
 codepage.html
 contact.html
 index.html
