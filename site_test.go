@@ -16,7 +16,7 @@ import (
 const content = `404.html
 about.html
 bg.png
-cfooter.html
+robots.txt
 code.css
 codepage.html
 contact.html
@@ -67,7 +67,7 @@ func TestWebApp(t *testing.T) {
 // test that we are sending back stuff that can be cached
 func TestConditionalGet(t *testing.T) {
 
-	setup(false)
+	setup(true)
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "http://localhost:8999/bg.png", nil)
