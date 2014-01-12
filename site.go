@@ -25,14 +25,13 @@ type (
 )
 
 var startTime time.Time
+var expireTime time.Time
 var expirationHeaders mango.Headers
 
 func StartHTTP(addr string) {
 
-	startTime = time.Now()
 	expirationHeaders = mango.Headers{}
-	expirationHeaders.Add("Last-Modified", startTime.Format(http.TimeFormat))
-	expirationHeaders.Add("Expires", startTime.Add(24*time.Hour).Format(http.TimeFormat))
+	MakeExpirationHeader()
 
 	html = Pages{}
 	filepath.Walk("html", html.Walker)
@@ -60,6 +59,10 @@ func StartHTTP(addr string) {
 
 func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 
+	if time.Now().After(expireTime) {
+		MakeExpirationHeader()
+	}
+
 	// urls with .html and without
 	// handle / and /index
 	f := e.Request().URL.Path
@@ -77,13 +80,12 @@ func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	page, have := html[f]
 
 	if !have {
-		log.Printf("404 on: %s", f)
 		return FourOhFour(e)
 	}
 
 
 	log.Printf("req for %s", f)
-	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && t.After(startTime) {
+	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && t.Add(time.Second).Before(startTime) {
 		return 304, expirationHeaders, ""
 	}
 
@@ -115,6 +117,10 @@ func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	if !have {
 		log.Printf("req for invalid project: %s", p)
 		return FourOhFour(e)
+	}
+
+	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && t.Add(time.Second).Before(startTime) {
+		return 304, expirationHeaders, ""
 	}
 
 	iframeUrl := fmt.Sprintf("/code/%s/%s", p, f)
@@ -167,6 +173,7 @@ func ProjectCode(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 }
 
 func FourOhFour(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
+	log.Printf("404 on: %s", e.Request().URL.Path)
 	return 404, expirationHeaders, mango.Body(html["html/404.html"])
 }
 
@@ -276,4 +283,12 @@ func (ps Pages) MakeNav() {
 	ps.Mustache("html/project.html", "{{{nav}}}", nav)
 	ps.Mustache("html/contact.html", "{{{nav}}}", nav)
 	ps.Mustache("html/contact.html", "{{{nav}}}", nav)
+}
+
+func MakeExpirationHeader() {
+	startTime = time.Now()
+	expireTime = startTime.Add(24*time.Hour)
+
+	expirationHeaders.Add("Last-Modified", startTime.Format(http.TimeFormat))
+	expirationHeaders.Add("Expires", expireTime.Format(http.TimeFormat))
 }
