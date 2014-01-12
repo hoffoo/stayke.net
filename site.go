@@ -100,6 +100,8 @@ func ResumeForward(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	forwardHeaders := make(mango.Headers)
 	forwardHeaders.Set("Location", "https://angel.co/marins")
 
+	log.Printf("resume request")
+
 	return 301, forwardHeaders, ""
 }
 
