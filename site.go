@@ -32,7 +32,7 @@ func StartHTTP(addr string) {
 	startTime = time.Now()
 	expirationHeaders = mango.Headers{}
 	expirationHeaders.Add("Last-Modified", startTime.Format(http.TimeFormat))
-	expirationHeaders.Add("Expires", startTime.Add(24*7*time.Hour).Format(http.TimeFormat))
+	expirationHeaders.Add("Expires", startTime.Add(24*time.Hour).Format(http.TimeFormat))
 
 	html = Pages{}
 	filepath.Walk("html", html.Walker)
