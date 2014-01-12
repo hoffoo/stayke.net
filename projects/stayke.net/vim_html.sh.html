@@ -7,20 +7,17 @@
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="bash">
 <meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="ir_black">
+<meta name="colorscheme" content="none">
 <style type="text/css">
 <!--
-body { color: #cecece; background-color: black; font-family: monospace; }
+body { color: #000000; background-color: #ffffff; font-family: monospace; }
 * { font-size: 1em; }
-.String { color: #A8FF60; }
-.Number { color: #FF73FD; }
-.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
-.Operator { color: white; }
-.Conditional { color: #6699CC; }
-.Statement { color: #6699CC; font-weight: bold; }
-.PreProc { color: #96CBFE; text-decoration: underline; }
-.Special { color: #E18964; font-weight: bold; }
-.Identifier { color: #C6C5FE; text-decoration: underline; }
+.FoldColumn { color: #c00000; background-color: #c0c0c0; padding-bottom: 1px; }
+.Constant { color: #0000c0; text-decoration: underline; }
+.Special { color: #c000c0; font-weight: bold; }
+.Identifier { color: #804000; text-decoration: underline; }
+.Statement { color: #008080; font-weight: bold; }
+.PreProc { color: #c000c0; text-decoration: underline; }
 .FoldColumn { text-decoration: none; white-space: pre; }
 .open-fold   .Folded      { display: none; }
 .open-fold   .fulltext      { display: inline; }
@@ -56,34 +53,34 @@ function toggleFold(objID)
 </head>
 <body>
 <div id='vimCodeElement'>
-<span class="Identifier">output</span>=<span class="Operator">&quot;</span><span class="Special">`</span><span class="Statement">pwd</span><span class="Special">`</span><span class="String">/projects/</span><span class="Operator">&quot;</span><br>
-<span class="Identifier">src</span>=<span class="Operator">&quot;</span><span class="Special">`</span><span class="Statement">pwd</span><span class="Special">`</span><span class="String">/src/</span><span class="Operator">&quot;</span><br>
+<span class="Identifier">output</span>=<span class="Statement">&quot;</span><span class="Special">`</span><span class="Statement">pwd</span><span class="Special">`</span><span class="Constant">/projects/</span><span class="Statement">&quot;</span><br>
+<span class="Identifier">src</span>=<span class="Statement">&quot;</span><span class="Special">`</span><span class="Statement">pwd</span><span class="Special">`</span><span class="Constant">/src/</span><span class="Statement">&quot;</span><br>
 <span class="Identifier">home</span>=<span class="Special">`</span><span class="Statement">pwd</span><span class="Special">`</span><br>
 <br>
 <span class="Statement">rm</span>&nbsp;<span class="Special">-rf</span>&nbsp;<span class="PreProc">$output</span>/*<br>
 <br>
 <span class="Statement">cd</span>&nbsp;src<br>
-<span class="Identifier">projects</span>=<span class="Special">`</span><span class="Statement">find</span><span class="Special">&nbsp;.&nbsp;</span><span class="Special">-mindepth</span><span class="Special">&nbsp;</span><span class="Number">1</span><span class="Special">&nbsp;</span><span class="Special">-type</span><span class="Special">&nbsp;d&nbsp;</span><span class="Special">-not</span><span class="Special">&nbsp;</span><span class="Special">-path</span><span class="Special">&nbsp;</span><span class="Operator">'</span><span class="String">*/\.*</span><span class="Operator">'</span><span class="Special">`</span><br>
+<span class="Identifier">projects</span>=<span class="Special">`</span><span class="Statement">find</span><span class="Special">&nbsp;.&nbsp;</span><span class="Special">-mindepth</span><span class="Special">&nbsp;</span><span class="Constant">1</span><span class="Special">&nbsp;</span><span class="Special">-type</span><span class="Special">&nbsp;d&nbsp;</span><span class="Special">-not</span><span class="Special">&nbsp;</span><span class="Special">-path</span><span class="Special">&nbsp;</span><span class="Statement">'</span><span class="Constant">*/\.*</span><span class="Statement">'</span><span class="Special">`</span><br>
 <br>
 <span class="Statement">cd</span>&nbsp;<span class="PreProc">$output</span><br>
 <span class="Statement">for</span>&nbsp;p&nbsp;<span class="Statement">in</span>&nbsp;<span class="PreProc">$projects</span>;<br>
-<span class="Conditional">do</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">mkdir</span>&nbsp;<span class="Conditional">-p</span>&nbsp;<span class="PreProc">$p</span><br>
-<span class="Conditional">done</span><br>
+<span class="Statement">do</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">mkdir</span>&nbsp;<span class="Statement">-p</span>&nbsp;<span class="PreProc">$p</span><br>
+<span class="Statement">done</span><br>
 <br>
 <span class="Statement">cd</span>&nbsp;<span class="PreProc">$src</span><br>
 <span class="Statement">for</span>&nbsp;p&nbsp;<span class="Statement">in</span>&nbsp;<span class="PreProc">$projects</span>;<br>
-<span class="Conditional">do</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;f&nbsp;<span class="Statement">in</span>&nbsp;<span class="Special">`</span><span class="Statement">find</span><span class="Special">&nbsp;</span><span class="PreProc">$p</span><span class="Special">&nbsp;</span><span class="Special">-maxdepth</span><span class="Special">&nbsp;</span><span class="Number">1</span><span class="Special">&nbsp;</span><span class="Special">-type</span><span class="Special">&nbsp;f&nbsp;</span><span class="Special">-not</span><span class="Special">&nbsp;</span><span class="Special">-path</span><span class="Special">&nbsp;</span><span class="Operator">'</span><span class="String">*/\.*</span><span class="Operator">'</span><span class="Special">&nbsp;</span><span class="Special">-printf</span><span class="Special">&nbsp;</span><span class="Operator">&quot;</span><span class="String">%p</span><span class="Special">\n</span><span class="Operator">&quot;</span><span class="Special">`</span>;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">do</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Identifier">file</span>=<span class="PreProc">${</span><span class="PreProc">f</span><span class="Operator">#</span>./<span class="PreProc">}</span><br>
+<span class="Statement">do</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;f&nbsp;<span class="Statement">in</span>&nbsp;<span class="Special">`</span><span class="Statement">find</span><span class="Special">&nbsp;</span><span class="PreProc">$p</span><span class="Special">&nbsp;</span><span class="Special">-maxdepth</span><span class="Special">&nbsp;</span><span class="Constant">1</span><span class="Special">&nbsp;</span><span class="Special">-type</span><span class="Special">&nbsp;f&nbsp;</span><span class="Special">-not</span><span class="Special">&nbsp;</span><span class="Special">-path</span><span class="Special">&nbsp;</span><span class="Statement">'</span><span class="Constant">*/\.*</span><span class="Statement">'</span><span class="Special">&nbsp;</span><span class="Special">-printf</span><span class="Special">&nbsp;</span><span class="Statement">&quot;</span><span class="Constant">%p</span><span class="Special">\n</span><span class="Statement">&quot;</span><span class="Special">`</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">do</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Identifier">file</span>=<span class="PreProc">${</span><span class="PreProc">f</span><span class="Statement">#</span>./<span class="PreProc">}</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Identifier">out</span>=<span class="PreProc">$output$file</span><br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">echo</span><span class="String">&nbsp;</span><span class="PreProc">$file</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gvim&nbsp;<span class="Conditional">-u</span>&nbsp;<span class="PreProc">$home</span>/htmlrc.vim&nbsp;<span class="Conditional">-E</span>&nbsp;<span class="Conditional">-s</span>&nbsp;<span class="Conditional">-c</span>&nbsp;+<span class="Operator">&quot;</span><span class="String">:syn on</span><span class="Operator">&quot;</span>&nbsp;+<span class="Operator">&quot;</span><span class="String">run! syntax/2html.vim</span><span class="Operator">&quot;</span>&nbsp;+<span class="Operator">&quot;</span><span class="String">saveas!&nbsp;</span><span class="PreProc">$out.html</span><span class="Operator">&quot;</span>&nbsp;+<span class="Operator">&quot;</span><span class="String">qall!</span><span class="Operator">&quot;</span>&nbsp;<span class="PreProc">$file</span>&nbsp;<span class="Conditional">&gt;&gt;</span>&nbsp;/dev/null &amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">done</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">echo</span><span class="Constant">&nbsp;</span><span class="PreProc">$file</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gvim&nbsp;<span class="Statement">-u</span>&nbsp;<span class="PreProc">$home</span>/htmlrc.vim&nbsp;<span class="Statement">-E</span>&nbsp;<span class="Statement">-s</span>&nbsp;<span class="Statement">-c</span>&nbsp;+<span class="Statement">&quot;</span><span class="Constant">:syn on</span><span class="Statement">&quot;</span>&nbsp;+<span class="Statement">&quot;</span><span class="Constant">run! syntax/2html.vim</span><span class="Statement">&quot;</span>&nbsp;+<span class="Statement">&quot;</span><span class="Constant">saveas!&nbsp;</span><span class="PreProc">$out.html</span><span class="Statement">&quot;</span>&nbsp;+<span class="Statement">&quot;</span><span class="Constant">qall!</span><span class="Statement">&quot;</span>&nbsp;<span class="PreProc">$file</span>&nbsp;<span class="Statement">&gt;&gt;</span>&nbsp;/dev/null &amp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">done</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">echo</span><br>
-<span class="Conditional">done</span><br>
+<span class="Statement">done</span><br>
 <br>
 </div>
 </body>
