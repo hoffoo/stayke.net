@@ -30,7 +30,10 @@ var expirationHeaders mango.Headers
 func StartHTTP(addr string) {
 
 	startTime = time.Now()
-	expirationHeaders = mango.Headers{"Last-Modified": []string{startTime.Format(http.TimeFormat),}, "Expires": []string{startTime.Add(24*7*time.Hour).Format(http.TimeFormat),}}
+	expirationHeaders = mango.Headers{}
+	expirationHeaders.Add("Last-Modified", startTime.Format(http.TimeFormat))
+	expirationHeaders.Add("Expires", startTime.Add(24*7*time.Hour).Format(http.TimeFormat))
+
 	html = Pages{}
 	filepath.Walk("html", html.Walker)
 
