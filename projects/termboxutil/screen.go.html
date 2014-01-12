@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/stayke.net/src/termboxutil/screen.go.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="go">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.String { color: #A8FF60; }
+.Number { color: #FF73FD; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Keyword { color: #96CBFE; }
+.Conditional { color: #6699CC; }
+.Statement { color: #6699CC; font-weight: bold; }
+.Comment { color: #A8FF60; font-weight: bold; }
+.Type { color: #FFFFB6; text-decoration: underline; }
+.Todo { color: #8f8f8f; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+<span class="Comment">/*</span><br>
+<span class="Comment">The MIT License (MIT)</span><br>
+<br>
+<span class="Comment">Copyright (c) 2013 Marin Staykov</span><br>
+<br>
+<span class="Comment">Permission is hereby granted, free of charge, to any person obtaining a copy</span><br>
+<span class="Comment">of this software and associated documentation files (the &quot;Software&quot;), to deal</span><br>
+<span class="Comment">in the Software without restriction, including without limitation the rights</span><br>
+<span class="Comment">to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span><br>
+<span class="Comment">copies of the Software, and to permit persons to whom the Software is</span><br>
+<span class="Comment">furnished to do so, subject to the following conditions:</span><br>
+<br>
+<span class="Comment">The above copyright notice and this permission notice shall be included in</span><br>
+<span class="Comment">all copies or substantial portions of the Software.</span><br>
+<br>
+<span class="Comment">THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span><br>
+<span class="Comment">IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span><br>
+<span class="Comment">FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span><br>
+<span class="Comment">AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span><br>
+<span class="Comment">LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span><br>
+<span class="Comment">OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span><br>
+<span class="Comment">THE SOFTWARE.</span><br>
+<span class="Comment">*/</span><br>
+<br>
+<br>
+<span class="Statement">package</span>&nbsp;termboxutil<br>
+<br>
+<span class="Statement">import</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;errors&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;termbox&nbsp;<span class="String">&quot;github.com/nsf/termbox-go&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;sync&quot;</span><br>
+)<br>
+<br>
+<span class="Keyword">var</span>&nbsp;screenMutex sync.Mutex<br>
+<br>
+<span class="Keyword">type</span>&nbsp;Screen []*Window<br>
+<br>
+<span class="Keyword">var</span>&nbsp;curWindow *Window<br>
+<br>
+<span class="Keyword">type</span>&nbsp;Window&nbsp;<span class="Keyword">struct</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sync.Mutex<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;xpos, ypos&nbsp;<span class="Type">int</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;selected&nbsp;&nbsp;&nbsp;<span class="Type">int</span>&nbsp;<span class="Comment">// selected row</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;scrollable&nbsp;<span class="Type">bool</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;scrollPos&nbsp;&nbsp;<span class="Type">int</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;closing&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">bool</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;autoResize&nbsp;<span class="Type">bool</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;screen&nbsp;&nbsp;&nbsp;&nbsp; *Screen<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Fg, Bg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; termbox.Attribute<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RowFg, RowBg termbox.Attribute&nbsp;<span class="Comment">// selected row colors</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Rows&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; []Row<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CatchEvent&nbsp;&nbsp;&nbsp;<span class="Type">func</span>(termbox.Event)<br>
+}<br>
+<br>
+<span class="Keyword">type</span>&nbsp;Row&nbsp;<span class="Keyword">struct</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Text&nbsp;&nbsp;&nbsp;<span class="Type">string</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Fg, Bg termbox.Attribute<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(s *Screen) Focus(w *Window) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;screenMutex.Lock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;curWindow = w<br>
+&nbsp;&nbsp;&nbsp;&nbsp;screenMutex.Unlock()<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(s *Screen) NewWindow(fg, bg, rowFg, rowBg termbox.Attribute) Window {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;screenMutex.Lock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">defer</span>&nbsp;screenMutex.Unlock()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;window := Window{sync.Mutex{},&nbsp;<span class="Number">0</span>,&nbsp;<span class="Number">0</span>,&nbsp;<span class="Number">0</span>,&nbsp;<span class="Keyword">false</span>,&nbsp;<span class="Number">0</span>,&nbsp;<span class="Keyword">false</span>,&nbsp;<span class="Keyword">true</span>, s, fg, bg, rowFg, rowBg,&nbsp;<span class="Keyword">nil</span>,&nbsp;<span class="Keyword">nil</span>}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*s =&nbsp;<span class="Keyword">append</span>(*s, &amp;window)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;curWindow = &amp;window<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;window<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(s *Screen) Loop() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e := termbox.PollEvent()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// handle error</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;e.Type == termbox.EventError {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">panic</span>(e.Err)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w := curWindow&nbsp;<span class="Comment">//&nbsp;</span><span class="Todo">TODO</span><span class="Comment">&nbsp;rename w to curWindow</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// handle resize</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.autoResize &amp;&amp; e.Type == termbox.EventResize {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;err := w.Redraw()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">panic</span>(err)&nbsp;<span class="Comment">//&nbsp;</span><span class="Todo">TODO</span><span class="Comment">&nbsp;dont panic here</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.Flush()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">continue</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.CatchEvent !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.CatchEvent(e)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(w *Window) Draw(data []<span class="Type">string</span>)&nbsp;<span class="Type">error</span>&nbsp;{<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.Lock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.selected =&nbsp;<span class="Number">0</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.scrollPos =&nbsp;<span class="Number">0</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.Rows =&nbsp;<span class="Keyword">make</span>([]Row,&nbsp;<span class="Keyword">len</span>(data))<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;i, str :=&nbsp;<span class="Statement">range</span>&nbsp;data {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.Rows[i] = Row{str, w.RowFg, w.RowBg}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.Unlock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;w.Redraw()<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(w *Window) Redraw()&nbsp;<span class="Type">error</span>&nbsp;{<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.Lock()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;err := termbox.Clear(w.Fg, w.Bg)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;maxx, maxy := termbox.Size()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;err<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;i, row :=&nbsp;<span class="Statement">range</span>&nbsp;w.Rows[w.scrollPos:] {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;_, c :=&nbsp;<span class="Statement">range</span>&nbsp;row.Text {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;i == w.selected {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.SetCell(w.xpos, w.ypos,&nbsp;<span class="Type">rune</span>(c), row.Fg, row.Bg)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.SetCell(w.xpos, w.ypos,&nbsp;<span class="Type">rune</span>(c), w.Fg, w.Bg)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.xpos +=&nbsp;<span class="Number">1</span>; w.xpos &gt; maxx {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">break</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.xpos =&nbsp;<span class="Number">0</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.ypos +=&nbsp;<span class="Number">1</span>; w.ypos &gt; maxy {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">break</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.ypos =&nbsp;<span class="Number">0</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.xpos =&nbsp;<span class="Number">0</span>&nbsp;<span class="Comment">// redundant but lets avoid problems later</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.Unlock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Keyword">nil</span><br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(w *Window) CurrentRow() *Row {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;&amp;w.Rows[w.selected+w.scrollPos]<br>
+}<br>
+<br>
+<span class="Comment">// selects the next row</span><br>
+<span class="Keyword">func</span>&nbsp;(w *Window) NextRow() {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_, maxy := termbox.Size()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.scrollable ==&nbsp;<span class="Keyword">true</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.selected+w.scrollPos ==&nbsp;<span class="Keyword">len</span>(w.Rows)-<span class="Number">1</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Comment">// bottom of the visible output</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>&nbsp;w.selected == maxy-<span class="Number">1</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.ScrollDown()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.selected +=&nbsp;<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.selected +=&nbsp;<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Comment">// selects the prev row</span><br>
+<span class="Keyword">func</span>&nbsp;(w *Window) PrevRow() {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.scrollable ==&nbsp;<span class="Keyword">false</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.selected -=&nbsp;<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.selected ==&nbsp;<span class="Number">0</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.ScrollUp()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.selected -=&nbsp;<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(w *Window) ScrollUp() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;w.scrollPos &gt;&nbsp;<span class="Number">0</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.scrollPos -=&nbsp;<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(w *Window) ScrollDown() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.scrollPos +=&nbsp;<span class="Number">1</span><br>
+}<br>
+<br>
+<span class="Comment">// toggle if NextRow() and PrevRow will scroll the window</span><br>
+<span class="Keyword">func</span>&nbsp;(w *Window) Scrollable(togl&nbsp;<span class="Type">bool</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w.scrollable = togl<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(w *Window) MarkRow(i&nbsp;<span class="Type">int</span>, fg, bg termbox.Attribute)&nbsp;<span class="Type">error</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;i &lt;&nbsp;<span class="Number">0</span>&nbsp;|| i &gt;&nbsp;<span class="Keyword">len</span>(w.Rows)-<span class="Number">1</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;errors.New(<span class="String">&quot;termbox: unknown row&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;row := &amp;w.Rows[i]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;row.Fg = fg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;row.Bg = bg<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Keyword">nil</span><br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(w *Window) UnmarkRow(i&nbsp;<span class="Type">int</span>)&nbsp;<span class="Type">error</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;w.MarkRow(i, w.Fg, w.Bg)<br>
+}<br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

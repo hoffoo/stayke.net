@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/stayke.net/src/go-radius/attribute.go.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="go">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.Number { color: #FF73FD; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Keyword { color: #96CBFE; }
+.Statement { color: #6699CC; font-weight: bold; }
+.Comment { color: #A8FF60; font-weight: bold; }
+.Type { color: #FFFFB6; text-decoration: underline; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+<span class="Statement">package</span>&nbsp;radius<br>
+<br>
+<span class="Comment">// RFC required</span><br>
+<span class="Keyword">const</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;User_Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">uint8</span>&nbsp;=&nbsp;<span class="Number">1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;User_Password&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">2</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHAP_Password&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">3</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;NAS_IP_Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">4</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;NAS_Port&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">5</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Service_Type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">6</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_Protocol&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">7</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_IP_Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">8</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_IP_Netmask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">9</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_Routing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">10</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Filter_Id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">11</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_MTU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">12</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_Compression&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">13</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Login_IP_Host&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">14</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Login_Service&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">15</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Login_TCP_Port&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">16</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Reply_Message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">18</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Callback_Number&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">19</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Callback_Id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">20</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_Route&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">22</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_IPX_Network&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">23</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;State&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">24</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Class&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">25</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Vendor_Specific&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">26</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Session_Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">27</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Idle_Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">28</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Termination_Action&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">29</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Called_Station_Id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">30</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Calling_Station_Id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">31</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;NAS_Identifier&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">32</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Proxy_State&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">33</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Login_LAT_Service&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">34</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Login_LAT_Node&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">35</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Login_LAT_Group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">36</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_AppleTalk_Link&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">37</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_AppleTalk_Network&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">38</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Framed_AppleTalk_Zone&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">39</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHAP_Challenge&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">60</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;NAS_Port_Type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="Number">61</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Port_Limit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">62</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Login_LAT_Port&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;<span class="Number">63</span><br>
+)<br>
+<br>
+<span class="Comment">// Value constants used to represent the attribute's Value type</span><br>
+<span class="Keyword">const</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//1-253 octets containing UTF-8 encoded 10646 [7]</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//characters.&nbsp;&nbsp;Text of length zero (0) MUST NOT be sent;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//omit the entire attribute instead.</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Text&nbsp;<span class="Type">byte</span>&nbsp;=&nbsp;<span class="Keyword">iota</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//1-253 octets containing binary data (values 0 through</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//255 decimal, inclusive).&nbsp;&nbsp;Strings of length zero (0)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//MUST NOT be sent; omit the entire attribute instead.</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;String<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// 32 bit value, most significant octet first.</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Address<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//32 bit unsigned value, most significant octet first.</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Integer<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//32 bit unsigned value, most significant octet first --</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//seconds since 00:00:00 UTC, January 1, 1970.&nbsp;&nbsp;The</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//standard Attributes do not use this data type but it is</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//presented here for possible use in future attributes.</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Time<br>
+)<br>
+<br>
+<span class="Keyword">type</span>&nbsp;Attribute&nbsp;<span class="Keyword">struct</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VendorId&nbsp;<span class="Type">uint16</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;TypeId&nbsp;&nbsp;&nbsp;<span class="Type">uint8</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Value&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">byte</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Type">string</span><br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;(a *Attribute) Len()&nbsp;<span class="Type">byte</span>&nbsp;{<br>
+<br>
+}<br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

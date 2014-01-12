@@ -1,0 +1,243 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/stayke.net/src/xxtail/main.go.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="go">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.String { color: #A8FF60; }
+.Number { color: #FF73FD; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Keyword { color: #96CBFE; }
+.Conditional { color: #6699CC; }
+.Statement { color: #6699CC; font-weight: bold; }
+.Comment { color: #A8FF60; font-weight: bold; }
+.Type { color: #FFFFB6; text-decoration: underline; }
+.Special { color: #E18964; font-weight: bold; }
+.Todo { color: #8f8f8f; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+<span class="Statement">package</span>&nbsp;main<br>
+<br>
+<span class="Statement">import</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;fmt&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;github.com/howeyc/fsnotify&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;io&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;os&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&quot;os/signal&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&quot;syscall&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;flag&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;path&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;path/filepath&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;sync&quot;</span><br>
+)<br>
+<br>
+<span class="Keyword">var</span>&nbsp;mu *sync.RWMutex<br>
+<span class="Keyword">var</span>&nbsp;watcher *fsnotify.Watcher<br>
+<span class="Keyword">var</span>&nbsp;watching&nbsp;<span class="Type">map</span>[<span class="Type">string</span>]*os.File<br>
+<span class="Keyword">var</span>&nbsp;cwd&nbsp;<span class="Type">string</span><br>
+<br>
+<span class="Keyword">var</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;recursive&nbsp;<span class="Type">bool</span>&nbsp;<span class="Comment">// recurse into directories</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;watchAll&nbsp;&nbsp;<span class="Type">bool</span>&nbsp;<span class="Comment">// watch hidden files</span><br>
+)<br>
+<br>
+<span class="Comment">// function pased to os.Walk</span><br>
+<span class="Keyword">func</span>&nbsp;Tail(path&nbsp;<span class="Type">string</span>, info os.FileInfo, err&nbsp;<span class="Type">error</span>)&nbsp;<span class="Type">error</span>&nbsp;{<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;</span><span class="Todo">FIXME</span><span class="Comment">&nbsp;this wont skip hidden files on windows</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// not sure if people even use them</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;watchAll ==&nbsp;<span class="Keyword">false</span>&nbsp;&amp;&amp; info.Name()[<span class="Number">0</span>:<span class="Number">1</span>] ==&nbsp;<span class="String">&quot;.&quot;</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;filepath.SkipDir<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;watcher.Watch(path)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addWatch(path,&nbsp;<span class="Keyword">true</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fmt.Println(path)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Keyword">nil</span><br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;update(in&nbsp;<span class="Type">io.Reader</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;b :=&nbsp;<span class="Keyword">make</span>([]<span class="Type">byte</span>,&nbsp;<span class="Number">4096</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n, err := in.Read(b)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;os.Stdout.Write(b[:n])<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">break</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;addWatch(path&nbsp;<span class="Type">string</span>, seekEnd&nbsp;<span class="Type">bool</span>)&nbsp;<span class="Type">error</span>&nbsp;{<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mu.Lock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fd, err := os.Open(path)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;err<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;watching[path] = fd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mu.Unlock()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;seekEnd {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd.Seek(<span class="Number">0</span>, os.SEEK_END)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;<span class="Keyword">nil</span><br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;watch() {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">var</span>&nbsp;event *fsnotify.FileEvent<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">var</span>&nbsp;open&nbsp;<span class="Type">bool</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;event, open = &lt;-watcher.Event; open ==&nbsp;<span class="Keyword">false</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">break</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>&nbsp;event.IsModify() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">go</span>&nbsp;fileModified(event)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>&nbsp;event.IsDelete() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out(<span class="String">&quot;DELETED&quot;</span>, event.Name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>&nbsp;event.IsCreate() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">go</span>&nbsp;fileCreated(event)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;<span class="Conditional">if</span>&nbsp;event.IsRename() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">var</span>&nbsp;lastformat&nbsp;<span class="Type">string</span><br>
+<br>
+<span class="Keyword">func</span>&nbsp;out(action, file&nbsp;<span class="Type">string</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;format := fmt.Sprintf(<span class="String">&quot;%s &lt;== %s</span><span class="Special">\n</span><span class="String">&quot;</span>, file, action)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;format == lastformat {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;lastformat = format<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fmt.Print(format)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;fileModified(event *fsnotify.FileEvent) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mu.RLock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fd, exists := watching[event.Name]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mu.RUnlock()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;exists ==&nbsp;<span class="Keyword">false</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;err := addWatch(event.Name,&nbsp;<span class="Keyword">false</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fmt.Printf(<span class="String">&quot;couldnt open file: %s&quot;</span>, event.Name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd = watching[event.Name]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd.Seek(<span class="Number">0</span>, os.SEEK_END)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out(<span class="String">&quot;MODIFIED&quot;</span>, event.Name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;update(fd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;fileCreated(event *fsnotify.FileEvent) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mu.RLock()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fd, exists := watching[event.Name]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mu.RUnlock()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;exists ==&nbsp;<span class="Keyword">false</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;err := addWatch(event.Name,&nbsp;<span class="Keyword">false</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fmt.Printf(<span class="String">&quot;couldnt open file: %s&quot;</span>, event.Name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out(<span class="String">&quot;CREATE&quot;</span>, event.Name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd.Seek(<span class="Number">0</span>,&nbsp;<span class="Number">0</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out(<span class="String">&quot;TRUNCATE&quot;</span>, event.Name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;main() {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;flag.BoolVar(&amp;recursive,&nbsp;<span class="String">&quot;R&quot;</span>,&nbsp;<span class="Keyword">false</span>,&nbsp;<span class="String">&quot;tail failes in subfolders&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;flag.BoolVar(&amp;watchAll,&nbsp;<span class="String">&quot;a&quot;</span>,&nbsp;<span class="Keyword">false</span>,&nbsp;<span class="String">&quot;watch hidden directories&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;flag.Parse()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;target := flag.Arg(<span class="Number">0</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">var</span>&nbsp;err&nbsp;<span class="Type">error</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cwd, err = os.Getwd()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fmt.Println(<span class="String">&quot;couldnt get cwd&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// if no args its cwd, otherwise the directory/file to tail</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;target ==&nbsp;<span class="String">&quot;&quot;</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;target = cwd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_, staterr := os.Stat(path.Join(cwd, target))<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;staterr !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fmt.Println(<span class="String">&quot;couldnt stat &quot;</span>&nbsp;+ target)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;watcher, err = fsnotify.NewWatcher()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fmt.Println(<span class="String">&quot;couldnt open watcher&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;watching =&nbsp;<span class="Keyword">make</span>(<span class="Type">map</span>[<span class="Type">string</span>]*os.File)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mu = &amp;sync.RWMutex{}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">go</span>&nbsp;filepath.Walk(target, Tail)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;watch()<br>
+}<br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

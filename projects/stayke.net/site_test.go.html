@@ -1,0 +1,386 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/stayke.net/src/stayke.net/site_test.go.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="go">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.String { color: #A8FF60; }
+.Number { color: #FF73FD; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Keyword { color: #96CBFE; }
+.Conditional { color: #6699CC; }
+.Statement { color: #6699CC; font-weight: bold; }
+.Comment { color: #A8FF60; font-weight: bold; }
+.Type { color: #FFFFB6; text-decoration: underline; }
+.Special { color: #E18964; font-weight: bold; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+<span class="Statement">package</span>&nbsp;homepage<br>
+<br>
+<span class="Statement">import</span>&nbsp;(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;bytes&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;fmt&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;log&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;net/http&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;os&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;path/filepath&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;strings&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;sync&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;testing&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="String">&quot;time&quot;</span><br>
+)<br>
+<br>
+<span class="Keyword">const</span>&nbsp;content =&nbsp;<span class="String">`404.html</span><br>
+<span class="String">about.html</span><br>
+<span class="String">bg.png</span><br>
+<span class="String">cfooter.html</span><br>
+<span class="String">code.css</span><br>
+<span class="String">codepage.html</span><br>
+<span class="String">contact.html</span><br>
+<span class="String">index.html</span><br>
+<span class="String">main.css</span><br>
+<span class="String">project.html`</span><br>
+<br>
+<span class="Keyword">func</span>&nbsp;TestWebApp(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">true</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pageUris := strings.Split(content,&nbsp;<span class="String">&quot;</span><span class="Special">\n</span><span class="String">&quot;</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;c :=&nbsp;<span class="Keyword">make</span>(<span class="Type">chan</span>&nbsp;<span class="Type">bool</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;_, uri :=&nbsp;<span class="Statement">range</span>&nbsp;pageUris {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u := uri<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">go</span>&nbsp;<span class="Type">func</span>() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Keyword">var</span>&nbsp;failure&nbsp;<span class="Type">bool</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resp, err := http.Get(<span class="String">&quot;<a href="http://localhost:8999/">http://localhost:8999/</a>&quot;</span>&nbsp;+ u)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Log(err)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.StatusCode !=&nbsp;<span class="Number">200</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Log(resp.Request.URL.Path +&nbsp;<span class="String">&quot; failed&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fail()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;failure =&nbsp;<span class="Keyword">true</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c &lt;- failure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;respc :=&nbsp;<span class="Number">0</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-c<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;respc++<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;respc ==&nbsp;<span class="Keyword">len</span>(pageUris) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">break</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Comment">// test that we are sending back stuff that can be cached</span><br>
+<span class="Keyword">func</span>&nbsp;TestConditionalGet(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">false</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;client := &amp;http.Client{}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;req, err := http.NewRequest(<span class="String">&quot;GET&quot;</span>,&nbsp;<span class="String">&quot;<a href="http://localhost:8999/bg.png">http://localhost:8999/bg.png</a>&quot;</span>,&nbsp;<span class="Keyword">nil</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(err)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// req.Headers.Add()</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// make the request to bg.png</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;resp, err := client.Do(req)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(err)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">defer</span>&nbsp;resp.Body.Close()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.StatusCode !=&nbsp;<span class="Number">200</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;didnt return 200 on img req&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.Header.Get(<span class="String">&quot;Last-Modified&quot;</span>) ==&nbsp;<span class="String">&quot;&quot;</span>&nbsp;|| resp.Header.Get(<span class="String">&quot;Expires&quot;</span>) ==&nbsp;<span class="String">&quot;&quot;</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;didnt send back cache control headers&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;req, err = http.NewRequest(<span class="String">&quot;GET&quot;</span>,&nbsp;<span class="String">&quot;<a href="http://localhost:8999/bg.png">http://localhost:8999/bg.png</a>&quot;</span>,&nbsp;<span class="Keyword">nil</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mod := time.Now().Format(http.TimeFormat)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;req.Header.Add(<span class="String">&quot;If-Modified-Since&quot;</span>, mod)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;resp, err = client.Do(req)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(err)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.StatusCode !=&nbsp;<span class="Number">304</span>&nbsp;|| resp.Header.Get(<span class="String">&quot;Last-Modified&quot;</span>) ==&nbsp;<span class="String">&quot;&quot;</span>&nbsp;|| resp.Header.Get(<span class="String">&quot;Expires&quot;</span>) ==&nbsp;<span class="String">&quot;&quot;</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;didnt send back cache control headers or status&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">defer</span>&nbsp;resp.Body.Close()<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;TestProjectWebAppReq(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">true</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p := Projects{}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(<span class="String">&quot;projects&quot;</span>, p.Walker)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;reqC :=&nbsp;<span class="Number">0</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;c :=&nbsp;<span class="Keyword">make</span>(<span class="Type">chan</span>&nbsp;<span class="Type">bool</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;proj, files :=&nbsp;<span class="Statement">range</span>&nbsp;p {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;proj := proj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files := files<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reqC +=&nbsp;<span class="Keyword">len</span>(files)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//reqC += len(files) + 1</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resp, err := http.Get(fmt.Sprintf(&quot;<a href="http://localhost:8999/project/%s">http://localhost:8999/project/%s</a>&quot;, proj))</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// check all files and req to project /</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if err != nil || resp.StatusCode != 200 {</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Log(&quot;error opening / for project: &quot; + proj)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c &lt;- true</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">go</span>&nbsp;<span class="Type">func</span>() {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;_, f :=&nbsp;<span class="Statement">range</span>&nbsp;files {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resp, err := http.Get(fmt.Sprintf(<span class="String">&quot;<a href="http://localhost:8999/project/%s/%s">http://localhost:8999/project/%s/%s</a>&quot;</span>, proj, f))<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;|| resp.StatusCode !=&nbsp;<span class="Number">200</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Log(fmt.Sprintf(<span class="String">&quot;projects %d: /project/%s/%s&quot;</span>, resp.StatusCode, proj, f))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fail()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c &lt;-&nbsp;<span class="Keyword">true</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c &lt;-&nbsp;<span class="Keyword">false</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-c<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reqC--<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;reqC ==&nbsp;<span class="Number">0</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">break</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;TestProjectCodeReq(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">true</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;proj :=&nbsp;<span class="String">&quot;xxtail&quot;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;f :=&nbsp;<span class="String">&quot;main.go.html&quot;</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;resp, err := http.Get(fmt.Sprintf(<span class="String">&quot;<a href="http://localhost:8999/code/%s/%s">http://localhost:8999/code/%s/%s</a>&quot;</span>, proj, f))<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.StatusCode !=&nbsp;<span class="Number">200</span>&nbsp;|| err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;bad response from /code&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;resp, err = http.Get(fmt.Sprintf(<span class="String">&quot;<a href="http://localhost:8999/code/BADPROJECT/%s">http://localhost:8999/code/BADPROJECT/%s</a>&quot;</span>, f))<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.StatusCode !=&nbsp;<span class="Number">404</span>&nbsp;|| err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;expected 404 on bad project in /code&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;resp, err = http.Get(fmt.Sprintf(<span class="String">&quot;<a href="http://localhost:8999/code/xxtail">http://localhost:8999/code/xxtail</a>&quot;</span>))<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.StatusCode !=&nbsp;<span class="Number">404</span>&nbsp;|| err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;expected 404 on bad project in /code&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;resp, err = http.Get(fmt.Sprintf(<span class="String">&quot;<a href="http://localhost:8999/code/%s/%s">http://localhost:8999/code/%s/%s</a>&quot;</span>, proj, f))<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;resp.StatusCode !=&nbsp;<span class="Number">200</span>&nbsp;|| err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;expected to get file on /code&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;TestMustachedNavAndCCS(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">true</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ps := Pages{}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(<span class="String">&quot;html&quot;</span>, ps.Walker)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p := Projects{}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(<span class="String">&quot;projects&quot;</span>, p.Walker)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest :=&nbsp;<span class="Type">func</span>(file, pattern, newdata&nbsp;<span class="Type">string</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e := ps.Mustache(file, pattern, newdata)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;e !=&nbsp;<span class="Keyword">nil</span>&nbsp;|| bytes.Index(ps[file], []<span class="Type">byte</span>(newdata)) == -<span class="Number">1</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Logf(<span class="String">&quot;mustache failed for file [%s] pattern [%s]&quot;</span>, file, pattern)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fail()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/index.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/project.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/project.html&quot;</span>,&nbsp;<span class="String">&quot;{{{projectnav}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/contact.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/about.html&quot;</span>,&nbsp;<span class="String">&quot;{{{nav}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/codepage.html&quot;</span>,&nbsp;<span class="String">&quot;{{{projectnav}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/codepage.html&quot;</span>,&nbsp;<span class="String">&quot;{{{filenav}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mustacheTest(<span class="String">&quot;html/codepage.html&quot;</span>,&nbsp;<span class="String">&quot;{{{url}}}&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;TestMustacheFunc(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">true</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ps := Pages{}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(<span class="String">&quot;html&quot;</span>, ps.Walker)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;err := ps.Mustache(<span class="String">&quot;dfsfadss&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>,&nbsp;<span class="String">&quot;&quot;</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err ==&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;expected result: err on not finding bogus html file&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;testPage :=&nbsp;<span class="String">&quot;html/project.html&quot;</span><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;beforeIdx := bytes.Index(ps[testPage], []<span class="Type">byte</span>(<span class="String">&quot;{{{projectnav}}}&quot;</span>))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;beforeIdx == -<span class="Number">1</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;no replace str&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;err = ps.Mustache(testPage,&nbsp;<span class="String">&quot;{{{projectnav}}}&quot;</span>,&nbsp;<span class="String">&quot;fail&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err !=&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;failed replacing in Mustache&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;beforeIdx = bytes.Index(ps[testPage], []<span class="Type">byte</span>(<span class="String">&quot;{{{projectnav}}}&quot;</span>))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;beforeIdx != -<span class="Number">1</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;failed replacing in Mustache&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;TestLoadProjects(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">true</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p := Projects{}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(<span class="String">&quot;projects&quot;</span>, p.Walker)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;<span class="Keyword">len</span>(p) ==&nbsp;<span class="Number">0</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(<span class="String">&quot;didnt walk shit&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">func</span>&nbsp;TestLoadPages(t *testing.T) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setup(<span class="Keyword">true</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ps := Pages{}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filepath.Walk(<span class="String">&quot;html&quot;</span>, ps.Walker)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;expectedPages := strings.Split(content,&nbsp;<span class="String">&quot;</span><span class="Special">\n</span><span class="String">&quot;</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;<span class="Keyword">len</span>(ps) !=&nbsp;<span class="Keyword">len</span>(expectedPages) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Log(content)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.Fatal(fmt.Sprintf(<span class="String">&quot;walked %d expected %d&quot;</span>,&nbsp;<span class="Keyword">len</span>(ps),&nbsp;<span class="Keyword">len</span>(expectedPages)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">var</span>&nbsp;setupOnce sync.Once<br>
+<br>
+<span class="Keyword">func</span>&nbsp;setup(silenceLog&nbsp;<span class="Type">bool</span>) {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;silenceLog {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nullBuff := NullBuff{}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log.SetOutput(&amp;nullBuff)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="Conditional">else</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log.SetOutput(os.Stdout)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;setupOnce.Do(startWebAppAndWait)<br>
+}<br>
+<br>
+<span class="Comment">// starts the web app and waits a request to complete</span><br>
+<span class="Keyword">func</span>&nbsp;startWebAppAndWait() {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">go</span>&nbsp;StartHTTP(<span class="String">&quot;localhost:8999&quot;</span>)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// wait for app to start</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">for</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_, err := http.Get(<span class="String">&quot;<a href="http://localhost:8999/">http://localhost:8999/</a>&quot;</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Conditional">if</span>&nbsp;err ==&nbsp;<span class="Keyword">nil</span>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">break</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<span class="Keyword">type</span>&nbsp;NullBuff&nbsp;<span class="Type">bytes.Buffer</span><br>
+<br>
+<span class="Keyword">func</span>&nbsp;(nb *NullBuff) Write(p []<span class="Type">byte</span>) (n&nbsp;<span class="Type">int</span>, err&nbsp;<span class="Type">error</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Comment">// do nothing</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="Statement">return</span>&nbsp;n,&nbsp;<span class="Keyword">nil</span><br>
+}<br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

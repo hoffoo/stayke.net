@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/code/stayke.net/src/termboxutil/README.md.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="markdown">
+<meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="ir_black">
+<style type="text/css">
+<!--
+body { color: #cecece; background-color: black; font-family: monospace; }
+* { font-size: 1em; }
+.Conditional { color: #6699CC; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Title { color: #f6f3e8; font-weight: bold; }
+.Delimiter { color: #00A0A0; }
+.PreProc { color: #96CBFE; text-decoration: underline; }
+.FoldColumn { text-decoration: none; white-space: pre; }
+.open-fold   .Folded      { display: none; }
+.open-fold   .fulltext      { display: inline; }
+.open-fold   .toggle-open   { display: none; }
+.closed-fold .toggle-closed { display: inline; }
+
+.closed-fold .fulltext      { display: none; }
+.closed-fold .Folded      { display: inline; }
+.closed-fold .toggle-open   { display: inline; }
+.closed-fold .toggle-closed { display: none; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+function toggleFold(objID)
+{
+  var fold;
+  fold = document.getElementById(objID);
+  if(fold.className == 'closed-fold')
+  {
+    fold.className = 'open-fold';
+  }
+  else if (fold.className == 'open-fold')
+  {
+    fold.className = 'closed-fold';
+  }
+}
+
+-->
+</script>
+</head>
+<body>
+<div id='vimCodeElement'>
+<span class="Title">termboxutil</span><br>
+<span class="PreProc">===========</span><br>
+<br>
+A tiny utility to reduce repetitive code when using <a href="https://github.com/nsf/termbox-go">https://github.com/nsf/termbox-go</a><br>
+<br>
+Introduces Screens and Windows, and an api to manage them.<br>
+<br>
+<span class="Delimiter">###</span><span class="Title">Screens</span><br>
+<span class="Conditional">-</span>&nbsp;Contain windows<br>
+<span class="Conditional">-</span>&nbsp;Loop() passing termbox events to appropriate window<br>
+<span class="Conditional">-</span>&nbsp;Manage currently &quot;focused&quot; window<br>
+<br>
+<span class="Delimiter">###</span><span class="Title">Windows</span><br>
+<span class="Conditional">-</span>&nbsp;Contain the actual data drawn<br>
+<span class="Conditional">-</span>&nbsp;Have a handler function that is ran when the window is focused and key pressed or other termbox event occurs&nbsp;<br>
+<span class="Conditional">-</span>&nbsp;Can scroll their output<br>
+<span class="Conditional">-</span>&nbsp;Can keep track of selected location (row on the screen or span)<br>
+<span class="Conditional">-</span>&nbsp;Update content with Draw() and Redraw()<br>
+<span class="Conditional">-</span>&nbsp;Mutex blocks concurrent changes<br>
+<br>
+<span class="Delimiter">###</span><span class="Title">Example</span><br>
+<br>
+<span class="Delimiter">```go</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;// create us a new screen<br>
+&nbsp;&nbsp;&nbsp;&nbsp;screen := termboxutil.Screen{}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// make us a window, not displayed yet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;searchWindow := screen.NewWindow(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.ColorWhite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // window foreground<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.ColorDefault,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // window background<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.ColorGreen,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // selected item foreground<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.ColorBlack)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // selected item background<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// this is the main window, since created last it is already focused<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// if we created out of order we can call screen.Focus(&amp;mainWindow)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mainWindow := screen.NewWindow(termbox.ColorWhite, termbox.ColorDefault, termbox.ColorGreen, termbox.ColorBlack)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mainWindow.Scrollable(true)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;err = mainWindow.Draw(filenames) // draw mainWindow's contents<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// etc...<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// when we are done flush the output to the screen<br>
+&nbsp;&nbsp;&nbsp;&nbsp;termbox.Flush()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// now create us a handler func for the main window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mainWindow.CatchEvent = func(event termbox.Event) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// simple scrolling<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if event.Ch == 'j' || event.Key == termbox.KeyArrowDown {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mainWindow.NextRow()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} else if event.Ch == 'k' || event.Key == termbox.KeyArrowUp {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mainWindow.PrevRow()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} else if event.Ch == 'i' {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// this is the data that the new screen will show<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// calling mainWindow.CurrentRow() here to find out where on the screen we are<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;searchResult := makeSomeOutputForSearchWindow(mainWindow.CurrentRow().Text)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// fill the new data and display this window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;searchWindow.Draw(searchResult)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// focus so we get input to our searchWindow handler func CatchEvent<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;screen.Focus(&amp;searchWindow)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// show output<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.Flush()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// setup any updates (for example PrevRow or Scrolling)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mainWindow.Redraw()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// show output<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.Flush()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// handler for the search window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;searchWindow.CatchEvent = func(event termbox.Event) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// if we quit we dont want to see search results anymore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if event.Ch == 'q' || event.Key == termbox.KeyEsc {<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// draw the mainWindow again<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mainWindow.Redraw()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// set is as focused<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;screen.Focus(&amp;mainWindow)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// show output<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.Flush()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// otherwise just redraw with whatever other updates we want here<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;searchWindow.Redraw()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;termbox.Flush()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// now start looping for input - this will block, passing any termbox<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// event to the currently focused window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;screen.Loop()<br>
+<br>
+<span class="Delimiter">```</span><br>
+<br>
+<br>
+<br>
+<span class="Delimiter">###</span><span class="Title">Notes</span><br>
+<br>
+<span class="Conditional">-</span>&nbsp;Tries to avoid flush except for when that is the only obvious option (on resize if windows are resizable) - Call termbox.Flush when you want to see any screen changes.<br>
+<span class="Conditional">-</span>&nbsp;Tries to stay out of the way, and still give some nice features<br>
+<span class="Conditional">-</span>&nbsp;Each row or span may have its own &quot;marked&quot; style (fg and bg termbox attributes) - this is used when NextRow() and PrevRow() are called to mark the current location<br>
+<span class="Conditional">-</span>&nbsp;Windows are focused in order that they are created - new windows gain focus automatically and are passed the subsequent events<br>
+<br>
+<br>
+For examples see <a href="https://github.com/hoffoo/movie-tin">https://github.com/hoffoo/movie-tin</a><br>
+</div>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
