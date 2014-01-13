@@ -87,7 +87,7 @@ func Index(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 
 	headers.Set("Content-Type", mime.TypeByExtension(f[strings.Index(f, "."):]))
 
-	log.Printf("req for %s", f)
+	Log(e.Request())
 	if t, err := time.Parse(http.TimeFormat, e.Request().Header.Get("If-Modified-Since")); err == nil && t.Add(time.Second).Before(startTime) {
 		return 304, headers, ""
 	}
@@ -100,6 +100,7 @@ func ResumeForward(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	forwardHeaders := make(mango.Headers)
 	forwardHeaders.Set("Location", "https://angel.co/marins")
 
+	Log(e.Request())
 	return 301, forwardHeaders, ""
 }
 
@@ -108,7 +109,6 @@ func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	path := strings.Split(e.Request().URL.Path, "/")
 
 	if len(path) < 3 {
-		log.Printf("invalid project request: %s", path)
 		return FourOhFour(e)
 	}
 
@@ -126,7 +126,6 @@ func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	projFiles, have := projects[p]
 
 	if !have {
-		log.Printf("req for invalid project: %s", p)
 		return FourOhFour(e)
 	}
 
@@ -146,10 +145,9 @@ func Project(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	codePage = bytes.Replace(codePage, []byte("{{{url}}}"), []byte(iframeUrl), 1)
 	codePage = bytes.Replace(codePage, []byte("{{{filenav}}}"), []byte(nav), 1)
 
-	log.Printf("req for project file [%s]: %s", p, f)
-
 	headers.Set("Content-Type", "text/html; charset=utf-8")
 
+	Log(e.Request())
 	return 200, headers, mango.Body(codePage)
 }
 
@@ -158,7 +156,6 @@ func ProjectCode(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	pathSpl := strings.Split(e.Request().URL.Path, "/")
 
 	if len(pathSpl) != 4 {
-		log.Printf("no file for /code req: %s", e.Request().URL.Path)
 		return FourOhFour(e)
 	}
 
@@ -168,26 +165,23 @@ func ProjectCode(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
 	_, have := projects[p]
 
 	if !have {
-		log.Printf("req for bad project: %s", p)
 		return FourOhFour(e)
 	}
 
 	file, err := ioutil.ReadFile(fmt.Sprintf("projects/%s/%s", p, f))
 
 	if err != nil {
-		log.Printf("couldnt load /code file [%s]: %s", p, f)
-		log.Print(err)
 		return FourOhFour(e)
 	}
 
-	log.Printf("req for project code [%s]: %s", p, f)
+	Log(e.Request())
 	headers.Set("Content-Type", "text/html; charset=utf-8")
 
 	return 200, headers, mango.Body(file)
 }
 
 func FourOhFour(e mango.Env) (mango.Status, mango.Headers, mango.Body) {
-	log.Printf("404 on: %s", e.Request().URL.Path)
+	log.Printf("[%s] 404 %s", e.Request().RemoteAddr, e.Request().URL.Path)
 	headers.Set("Content-Type", "text/html; charset=utf-8")
 	return 404, headers, mango.Body(html["html/404.html"])
 }
@@ -305,4 +299,8 @@ func MakeExpirationHeader() {
 
 	headers.Set("Last-Modified", startTime.Format(http.TimeFormat))
 	headers.Set("Expires", expireTime.Format(http.TimeFormat))
+}
+
+func Log(req *mango.Request) {
+	log.Printf("[%s] %s [%s]", req.RemoteAddr[:strings.Index(req.RemoteAddr, ":")], req.URL.Path, req.Header.Get("User-Agent"))
 }
