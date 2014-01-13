@@ -321,7 +321,7 @@ func TestMimeType(t *testing.T) {
 
 func TestResumeForward(t *testing.T) {
 
-	setup(false)
+	setup(true)
 
 	url := "http://localhost:8999/resume/"
 	noredir := &http.Transport{}
@@ -346,7 +346,7 @@ func TestResumeForward(t *testing.T) {
 
 func TestResumePDFLink(t *testing.T) {
 
-	setup(false)
+	setup(true)
 
 	url := "http://localhost:8999/resume.pdf"
 
@@ -368,7 +368,7 @@ var setupOnce sync.Once
 
 func setup(silenceLog bool) {
 
-	if silenceLog {
+	if !silenceLog {
 		nullBuff := NullBuff{}
 		log.SetOutput(&nullBuff)
 	} else {
