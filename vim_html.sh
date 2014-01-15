@@ -20,7 +20,7 @@ do
 		out=$output$file
 
 		echo $file
-		vim -u $home/htmlrc.vim -E -s -c +":syn on" +"run! syntax/2html.vim" +"saveas! $out.html" +"qall!" $file >> /dev/null &
+		gvim -u $home/htmlrc.vim -E -s -c +":syn on" +"run! syntax/2html.vim" +"saveas! $out.html" +"qall!" $file >> /dev/null &
 	done
 	echo
 done
