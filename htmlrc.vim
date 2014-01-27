@@ -11,4 +11,3 @@ set tabstop=4
 set foldlevel=1
 
 syn on
-colorscheme ir_black
