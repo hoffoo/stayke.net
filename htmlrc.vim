@@ -6,8 +6,8 @@ let g:html_no_progress
 let g:html_use_css=0
 let g:html_dynamic_folds=1
 
-set guifont=Lucida_Console:h11
 set tabstop=4 
 set foldlevel=1
 
+colorscheme ir_black
 syn on

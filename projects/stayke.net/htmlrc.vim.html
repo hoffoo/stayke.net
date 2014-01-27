@@ -7,17 +7,19 @@
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="vim">
 <meta name="settings" content="dynamic_folds,no_pre,use_css,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="none">
+<meta name="colorscheme" content="ir_black">
 <style type="text/css">
 <!--
-body { color: #000000; background-color: #ffffff; font-family: monospace; }
+body { color: #cecece; background-color: black; font-family: monospace; }
 * { font-size: 1em; }
-.Constant { color: #0000c0; text-decoration: underline; }
-.Identifier { color: #804000; text-decoration: underline; }
-.Statement { color: #008080; font-weight: bold; }
-.PreProc { color: #c000c0; text-decoration: underline; }
-.Type { color: #008000; text-decoration: underline; }
-.FoldColumn { color: #c00000; background-color: #c0c0c0; padding-bottom: 1px; }
+.Operator { color: white; }
+.Statement { color: #6699CC; font-weight: bold; }
+.FoldColumn { color: Cyan; background-color: Grey; padding-bottom: 1px; }
+.Type { color: #FFFFB6; text-decoration: underline; }
+.Number { color: #FF73FD; }
+.PreProc { color: #96CBFE; text-decoration: underline; }
+.String { color: #A8FF60; }
+.Identifier { color: #C6C5FE; text-decoration: underline; }
 .FoldColumn { text-decoration: none; white-space: pre; }
 .open-fold   .Folded      { display: none; }
 .open-fold   .fulltext      { display: inline; }
@@ -53,13 +55,13 @@ function toggleFold(objID)
 </head>
 <body>
 <div id='vimCodeElement'>
-<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_pre_wrap</span>&nbsp;<span class="Statement">=</span>&nbsp;<span class="Constant">0</span><br>
-<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_no_pre</span>&nbsp;<span class="Statement">=</span>&nbsp;<span class="Constant">1</span><br>
-<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_use_encoding</span>&nbsp;<span class="Statement">=</span>&nbsp;<span class="Constant">&quot;UTF-8&quot;</span><br>
-<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_expand_tabs</span><span class="Statement">=</span><span class="Constant">1</span><br>
+<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_pre_wrap</span>&nbsp;<span class="Operator">=</span>&nbsp;<span class="Number">0</span><br>
+<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_no_pre</span>&nbsp;<span class="Operator">=</span>&nbsp;<span class="Number">1</span><br>
+<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_use_encoding</span>&nbsp;<span class="Operator">=</span>&nbsp;<span class="String">&quot;UTF-8&quot;</span><br>
+<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_expand_tabs</span><span class="Operator">=</span><span class="Number">1</span><br>
 <span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_no_progress</span><br>
-<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_use_css</span><span class="Statement">=</span><span class="Constant">0</span><br>
-<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_dynamic_folds</span><span class="Statement">=</span><span class="Constant">1</span><br>
+<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_use_css</span><span class="Operator">=</span><span class="Number">0</span><br>
+<span class="Statement">let</span>&nbsp;<span class="Identifier">g:html_dynamic_folds</span><span class="Operator">=</span><span class="Number">1</span><br>
 <br>
 <span class="Statement">set</span>&nbsp;<span class="PreProc">guifont</span>=Lucida_Console<span class="Statement">:</span>h11<br>
 <span class="Statement">set</span>&nbsp;<span class="PreProc">tabstop</span>=4&nbsp;<br>
