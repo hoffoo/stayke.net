@@ -14,7 +14,7 @@ type Page struct {
     Content string
 }
 
-func GetPages() (pages map[string]*bytes.Buffer, documents map[string]*bytes.Buffer) {
+func GetDocuments() (pages map[string]*bytes.Buffer, assets map[string]*bytes.Buffer) {
 
     pageTpl := template.New("page")
     pageTpl = packTemplate(pageTpl, "page")
@@ -24,14 +24,17 @@ func GetPages() (pages map[string]*bytes.Buffer, documents map[string]*bytes.Buf
     homePage := getPage("home")
     aboutPage := getPage("about")
     contactPage := getPage("contact")
+    fourOhFourPage := getPage("404")
 
     homeBuf := bytes.Buffer{}
     aboutBuf := bytes.Buffer{}
     contactBuf := bytes.Buffer{}
+    fourOhFourBuf := bytes.Buffer{}
 
     pageTpl.Execute(&homeBuf, homePage)
     pageTpl.Execute(&aboutBuf, aboutPage)
     pageTpl.Execute(&contactBuf, contactPage)
+    pageTpl.Execute(&fourOhFourBuf, fourOhFourPage)
 
     pages = map[string]*bytes.Buffer{
         "/home":    &homeBuf,
@@ -39,10 +42,11 @@ func GetPages() (pages map[string]*bytes.Buffer, documents map[string]*bytes.Buf
         "/contact": &contactBuf,
     }
 
-    documents = map[string]*bytes.Buffer{
+    assets = map[string]*bytes.Buffer{
         "/main.css":   readAll("main.css"),
         "/bg.png":     readAll("bg.png"),
         "/robots.txt": readAll("robots.txt"),
+        "404":         &fourOhFourBuf,
     }
 
     return

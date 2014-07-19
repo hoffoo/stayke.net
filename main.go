@@ -1,18 +1,19 @@
 package main
 
 import (
-    "./site"
     "bytes"
     "fmt"
+    "github.com/hoffoo/stayke.net/site"
     "github.com/howeyc/fsnotify"
-    "mime"
     "net/http"
 )
 
-var responses map[string]*bytes.Buffer
+var pageResp map[string]*bytes.Buffer
+var assetResp map[string]*bytes.Buffer
 
 func init() {
-    responses = map[string]*bytes.Buffer{}
+    pageResp = map[string]*bytes.Buffer{}
+    assetResp = map[string]*bytes.Buffer{}
 }
 
 func main() {
@@ -34,19 +35,19 @@ func main() {
     http.HandleFunc("/", BufferHandlerFunc)
 
 reload:
-    pages, documents := site.GetPages()
+    pages, assets := site.GetDocuments()
 
-    for url, doc := range documents {
-        responses[url] = doc
+    for url, doc := range assets {
+        assetResp[url] = doc
     }
 
     for url, page := range pages {
-        responses[url+".html"] = page
-        responses[url] = page
+        pageResp[url+".html"] = page
+        pageResp[url] = page
     }
-    responses["/"] = responses["/home"]
-    responses["/index"] = responses["/home"]
-    responses["/index.html"] = responses["/home"]
+    pageResp["/"] = pageResp["/home"]
+    pageResp["/index"] = pageResp["/home"]
+    pageResp["/index.html"] = pageResp["/home"]
 
     fmt.Println("Reloading...")
     go http.ListenAndServe(":9999", nil)
@@ -63,11 +64,18 @@ watch:
 
 func BufferHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
-    if doc, ok := responses[r.URL.Path]; ok {
-        // i dont care if there is no exenstion, this is only to handle css files
-        w.Header().Set("Content-Type", mime.TypeByExtension(r.URL.Path))
-        w.Write(doc.Bytes())
-    } else {
-        w.Write([]byte("not found"))
+    if page, ok := pageResp[r.URL.Path]; ok {
+        w.Header().Set("Content-Type", "text/html")
+        w.Write(page.Bytes())
+        return
     }
+
+    if asset, ok := assetResp[r.URL.Path]; ok {
+        w.Header().Set("Content-Type", "text/html")
+        w.Write(asset.Bytes())
+        return
+    }
+
+    w.WriteHeader(http.StatusNotFound)
+    w.Write(assetResp["404"].Bytes())
 }
