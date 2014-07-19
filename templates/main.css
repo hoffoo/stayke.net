@@ -52,6 +52,7 @@ body {
 	text-transform: uppercase;
 	letter-spacing: 5px;
 	text-align: center;
+    width: 100%;
 }
 
 #nav a {
@@ -83,6 +84,7 @@ body {
 	margin: 0 auto;
 	background-color:#121212;
 	text-align: center;
+    max-width: 40px;
 }
 
 #content {
@@ -96,10 +98,69 @@ body {
 
 #footer {
 	background-image:url("bg.png");
-	min-height: 10%;
+	min-height: 50px;
 	min-width: 100%;
 	position: fixed;
 	bottom: 0;
 	margin: auto;
 }
 
+#projectnav {
+    margin-bottom: 30px;
+    font-size: 15px;
+    font-weight: 200;
+    font-family: "Inconsolata", "Menlo", monospace;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+#projectnav a:hover {
+    color: #666;
+}
+
+#projectnav a:visited {
+    color: #444;
+}
+
+#code {
+    text-align: center;
+}
+
+#filenav {
+    position: fixed;
+    margin-left: 35px;
+    font-size: 15px;
+    font-weight: 200;
+    font-family: "Inconsolata", "Menlo", monospace;
+    letter-spacing: 3px;
+}
+
+#nav {
+    text-transform: lowercase;
+}
+
+#nav a {
+    margin-left: 15px;
+}
+
+#codeview {
+    margin-top: 25px;
+}
+
+.tag {
+    font-size: 20px;
+    font-weight: 100;
+    font-family: "Inconsolata", "Menlo", monospace;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.tags {
+    font-size: 14px;
+    font-weight: 200;
+    font-family: "Inconsolata", "Menlo", monospace;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    text-align: center;
+}

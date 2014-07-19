@@ -1,0 +1,16 @@
+{{define "page"}}
+<!DOCTYPE html>
+<html>
+    <head>
+        {{template "head" .}}
+    </head>
+
+    <body>
+        {{template "nav" .}}
+		<div class="yue" id="content">
+            {{.Content}}
+		</div>
+		<div id="footer"></div>
+    </body>
+</html>
+{{end}}
