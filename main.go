@@ -5,7 +5,9 @@ import (
     "fmt"
     "github.com/hoffoo/stayke.net/site"
     "github.com/howeyc/fsnotify"
+    "mime"
     "net/http"
+    "strings"
 )
 
 var pageResp map[string]*bytes.Buffer
@@ -65,17 +67,18 @@ watch:
 func BufferHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
     if page, ok := pageResp[r.URL.Path]; ok {
+
         w.Header().Set("Content-Type", "text/html")
         w.Write(page.Bytes())
-        return
-    }
+    } else if asset, ok := assetResp[r.URL.Path]; ok {
 
-    if asset, ok := assetResp[r.URL.Path]; ok {
-        w.Header().Set("Content-Type", "text/html")
+        dot := strings.LastIndex(r.URL.Path, ".")
+        w.Header().Set("Content-Type", mime.TypeByExtension(r.URL.Path[dot:]))
         w.Write(asset.Bytes())
-        return
+    } else {
+
+        w.WriteHeader(http.StatusNotFound)
+        w.Write(assetResp["404"].Bytes())
     }
 
-    w.WriteHeader(http.StatusNotFound)
-    w.Write(assetResp["404"].Bytes())
 }
